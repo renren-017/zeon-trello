@@ -1,0 +1,23 @@
+<!-- todo_list/todo_app/templates/todo_app/todolist_form.html -->
+{% extends "boards/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="flex min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+  <div class="w-full max-w-md space-y-8">
+    <div>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input
+                    value="Save"
+                    type="submit">
+            <input
+                    value="Cancel"
+                    type="button"
+                    onclick="location.href='{% url "home" %}';">
+        </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

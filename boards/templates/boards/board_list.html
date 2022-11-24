@@ -1,0 +1,73 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+
+
+{% extends 'boards/base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="section is-small py-5 px-40">
+    <div class="container is-max-desktop">
+        <div class="columns">
+            <div class="column">
+          <span>
+              <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="12" height="12"
+                   viewBox="0 0 256 256" version="1.1" preserveAspectRatio="xMidYMid" style="display:inline-block;">
+                <defs>
+                    <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-1">
+                        <stop stop-color="#0091E6" offset="0%"/>
+                        <stop stop-color="#0079BF" offset="100%"/>
+                    </linearGradient>
+                </defs>
+                <g>
+                    <g>
+                        <rect fill="url(#linearGradient-1)" x="0" y="0" width="256" height="256" rx="25"/>
+                        <rect fill="#FFFFFF" x="144.64" y="33.28" width="78.08" height="112" rx="12"/>
+                        <rect fill="#FFFFFF" x="33.28" y="33.28" width="78.08" height="176" rx="12"/>
+                    </g>
+                </g>
+              </svg>
+              <p style="display:inline-block;color:#086ca4;" class="is-size-7 has-text-weight-bold">Boards</p>
+          </span>
+                <hr>
+            </div>
+            <div class="column is-four-fifths">
+                <div class="container"
+                     style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); grid-gap: 0.5em;">
+                    {% for board in object_list %}
+                    <a href="{% url 'board-detail' board.pk %}">
+                        <div class="card">
+                            <div class="card-image">
+                                <figure class="image is-4by3">
+                                    <img style="object-fit: cover;filter: brightness(70%);" src="media/{{ board.background_img }}"
+                                         alt="Placeholder image">
+                                </figure>
+                                <div style="position: absolute;top: 8px;left: 16px;color:white;"><p
+                                        class="is-size-7 has-text-weight-semibold">{{ board.title }}</p></div>
+                                <div style="position: absolute;bottom: 9px;right: 12px;">
+                                    {% if board.is_starred %}
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                         enable-background="new 0 0 24 24" viewBox="0 0 24 24">
+                                        <path fill="#fff"
+                                              d="M22,10.1c0.1-0.5-0.3-1.1-0.8-1.1l-5.7-0.8L12.9,3c-0.1-0.2-0.2-0.3-0.4-0.4C12,2.3,11.4,2.5,11.1,3L8.6,8.2L2.9,9 C2.6,9,2.4,9.1,2.3,9.3c-0.4,0.4-0.4,1,0,1.4l4.1,4l-1,5.7c0,0.2,0,0.4,0.1,0.6c0.3,0.5,0.9,0.7,1.4,0.4l5.1-2.7l5.1,2.7  c0.1,0.1,0.3,0.1,0.5,0.1l0,0c0.1,0,0.1,0,0.2,0c0.5-0.1,0.9-0.6,0.8-1.2l-1-5.7l4.1-4C21.9,10.5,22,10.3,22,10.1z"
+                                              class="color000 svgShape"/>
+                                    </svg>
+                                    {% else %}
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 29 29">
+                                        <path fill="#fff"
+                                              d="M20.953 26.489c-.327 0-.656-.079-.959-.238l-5.466-2.875-5.521 2.874a2.044 2.044 0 0 1-2.169-.157 2.044 2.044 0 0 1-.819-2.014l1.044-6.086-4.439-4.363a2.045 2.045 0 0 1-.521-2.112 2.047 2.047 0 0 1 1.663-1.4l6.11-.888 2.778-5.57c.35-.708 1.057-1.147 1.847-1.147s1.497.439 1.847 1.147l2.733 5.537 6.155.921a2.047 2.047 0 0 1 1.663 1.4 2.049 2.049 0 0 1-.521 2.112l-4.422 4.31 1.027 6.14a2.049 2.049 0 0 1-.819 2.014 2.07 2.07 0 0 1-1.211.395zM4.019 12.198l4.421 4.31c.485.474.707 1.154.593 1.822L7.99 24.417l.552.948-.466-.885 5.465-2.874a2.063 2.063 0 0 1 1.917-.001l5.466 2.875.086-.063-1.044-6.086a2.064 2.064 0 0 1 .592-1.823l4.422-4.31-.033-.103-6.11-.888a2.064 2.064 0 0 1-1.551-1.127l-2.733-5.537c-.008-.016-.017-.032-.054-.032l-2.787 5.569a2.06 2.06 0 0 1-1.549 1.127l-6.112.888-.731.818.699-.715z"
+                                              class="color000 svgShape"/>
+                                    </svg>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                    {% empty %}
+                    No boards yet.
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

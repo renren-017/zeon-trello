@@ -1,0 +1,122 @@
+<link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+<link rel="stylesheet" href="https://unpkg.com/flowbite@1.5.4/dist/flowbite.min.css"/>
+<script src="https://unpkg.com/flowbite@1.5.4/dist/flowbite.js"></script>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
+
+<section class="text-white text-xs bg-sky-600 px-7 w-full lg:bg-sky-700 lg:pb-0.5 navbar">
+    <div class="container flex flex-col flex-wrap items-center justify-between py-0 mx-auto md:flex-row max-w-7xl">
+        <div class="relative flex flex-col md:flex-row">
+            <a href="{% url 'home' %}"
+               class="flex items-center font-medium text-gray-900 text-xs lg:w-auto lg:items-center lg:justify-center md:mb-0">
+                <div style="width:75px;height:13px;background-image:url(https://a.trellocdn.com/prgb/dist/images/header-logo-spirit.d947df93bc055849898e.gif);background-repeat: no-repeat;background-size: contain;background-position: center;"></div>
+            </a>
+            <nav class="flex flex-wrap items-center text-xs text-base md:mb-0 md:pl-8 md:ml-8">
+                <a href="{% url 'home' %}" class="mr-5 font-normal leading-6 text-xs text-white lg:inline">
+                    <span class="navbar-text"> Home </span>
+                </a>
+
+
+                <button buttonid="dropdownDefault" data-dropdown-toggle="dropdown"
+                        class=" font-medium leading-6 text-xs text-white inline-flex items-center" type="button">
+        <span class="mr-5 font-normal leading-6 text-xs text-white navbar-text">Recent <svg style="vertical-align:;"
+                                                                                            width="15"
+                                                                                            height="15"
+                                                                                            role="presentation"
+                                                                                            focusable="false"
+                                                                                            viewBox="0 0 24 24"
+                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                            class="lg:inline-block">
+            <path d="M11.2929 16.7071L4.22185 9.63606C3.83132 9.24554 3.83132 8.61237 4.22185 8.22185C4.61237 7.83133 5.24554 7.83133 5.63606 8.22185L12 14.5858L18.364 8.22185C18.7545 7.83132 19.3877 7.83132 19.7782 8.22185C20.1687 8.61237 20.1687 9.24554 19.7782 9.63606L12.7071 16.7071C12.3166 17.0977 11.6834 17.0977 11.2929 16.7071Z"
+                  fill="currentColor" class=""></path>
+        </svg>
+        </span>
+                </button>
+                <div id="dropdown"
+                     class="hidden z-10 w-44 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700">
+                    <ul class="py-2 px-4 text-sm bg-white text-black" aria-labelledby="dropdownDefault">
+                        {% for board in recent_boards %}
+                            <a href="/{{ board.id }}"><li class="text-sm my-0.5">{{ board.title }}</li></a>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+
+                <button buttonid="dropdownDefault" data-dropdown-toggle="dropdown2"
+                        class=" font-medium leading-6 text-xs text-white inline-flex items-center" type="button">
+        <span class="mr-5 font-normal leading-6 text-xs text-white navbar-text">Starred <svg style="vertical-align:;"
+                                                                                             width="15"
+                                                                                             height="15"
+                                                                                             role="presentation"
+                                                                                             focusable="false"
+                                                                                             viewBox="0 0 24 24"
+                                                                                             xmlns="http://www.w3.org/2000/svg"
+                                                                                             class="lg:inline-block">
+            <path d="M11.2929 16.7071L4.22185 9.63606C3.83132 9.24554 3.83132 8.61237 4.22185 8.22185C4.61237 7.83133 5.24554 7.83133 5.63606 8.22185L12 14.5858L18.364 8.22185C18.7545 7.83132 19.3877 7.83132 19.7782 8.22185C20.1687 8.61237 20.1687 9.24554 19.7782 9.63606L12.7071 16.7071C12.3166 17.0977 11.6834 17.0977 11.2929 16.7071Z"
+                  fill="currentColor" class=""></path>
+        </svg>
+        </span>
+                </button>
+                <div id="dropdown2"
+                     class="hidden z-10 w-44 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700">
+                    <ul class="py-2 px-4 text-sm bg-white text-black" aria-labelledby="dropdownDefault">
+                        {% for board in starred_boards %}
+                            <a href="/{{ board.id }}"><li class="text-sm my-05">{{ board.title }}</li></a>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <button buttonid="dropdownDefault" data-dropdown-toggle="dropdown3"
+                        class=" font-medium leading-6 text-xs text-white inline-flex items-center" type="button">
+        <span class="mr-5 font-normal leading-6 text-xs text-white navbar-text">Archived <svg style="vertical-align:;"
+                                                                                            width="15"
+                                                                                            height="15"
+                                                                                            role="presentation"
+                                                                                            focusable="false"
+                                                                                            viewBox="0 0 24 24"
+                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                            class="lg:inline-block">
+            <path d="M11.2929 16.7071L4.22185 9.63606C3.83132 9.24554 3.83132 8.61237 4.22185 8.22185C4.61237 7.83133 5.24554 7.83133 5.63606 8.22185L12 14.5858L18.364 8.22185C18.7545 7.83132 19.3877 7.83132 19.7782 8.22185C20.1687 8.61237 20.1687 9.24554 19.7782 9.63606L12.7071 16.7071C12.3166 17.0977 11.6834 17.0977 11.2929 16.7071Z"
+                  fill="currentColor" class=""></path>
+        </svg>
+        </span>
+                </button>
+                <div id="dropdown3"
+                     class="hidden z-10 w-44 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700">
+                    <ul class="py-2 px-4 text-sm bg-white text-black" aria-labelledby="dropdownDefault">
+                        {% for board in archived_boards %}
+                            <a href="/{{ board.id }}"><li class="text-sm my-0.5">{{ board.title }}</li></a>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <label for="board-add">
+                    <p class="mr-5 font-normal leading-6 text-xs rounded bg-sky-900 px-4 py-0.5 navbar-button">
+                        Create</p></label>
+                <input
+                        id="board-add"
+                        type="button"
+                        onclick="location.href='{% url "board-add" %}'"/>
+            </nav>
+        </div>
+        <div class="inline-flex items-center ml-5 space-x-6 lg:justify-end">
+            {% if user.is_authenticated %}
+            <a href="{% url 'account_logout' %}"
+               class="text-xs font-medium leading-6 whitespace-no-wrap transition duration-150 ease-in-out hover:text-gray-100 hover:text-gray-300 navbar-text">
+                Log Out
+            </a>
+            {% else %}
+            <a href="{% url 'account_login' %}"
+               class="text-xs font-medium leading-6 whitespace-no-wrap transition duration-150 ease-in-out hover:text-gray-100 hover:text-gray-300 navbar-text">
+                Sign in
+            </a>
+            <a href="{% url 'account_signup' %}"
+               class="inline-flex items-center justify-center px-4 py-0.5 text-xs font-medium leading-6 text-white whitespace-no-wrap border border-transparent rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 border-white hover:bg-zinc-300"
+               data-rounded="rounded-md" data-primary="indigo-600">
+                Sign up
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+{% block content %}
+{% endblock %}

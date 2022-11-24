@@ -1,0 +1,13 @@
+{% extends 'users/base.html' %}
+{% load crispy_forms_tags %}
+{% block body %}
+<div class="mx-auto">
+    <div class="form-group">
+        <form action="" method="post">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <button type="submit" class="btn btn-danger w-100 my-3">Create account</button>
+        </form>
+    </div>
+</div>
+{% endblock body %}
