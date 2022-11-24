@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-1$tdjs5xl#q0!t7+2sim7sf!p+i5_fgudeu#ro(1994%=%_-9y
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['zeon-trello.herokuapp.com']
 
 
 # Application definition
