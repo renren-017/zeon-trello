@@ -61,7 +61,7 @@ class BoardDetailView(DetailView, LoginRequiredMixin, FormMixin):
             obj = form.save(commit=False)
             obj.board = board
             obj.save()
-            return redirect('board_detail', board.pk)
+            return redirect('board-detail', board.pk)
 
     def form_valid(self, form):
         form.save()
