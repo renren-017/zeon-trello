@@ -29,10 +29,11 @@ class Board(models.Model):
         output = BytesIO()
 
         # Resize/modify the image
+        im = im.convert('RGB')
         im = im.resize((100, 100))
 
         # after modifications, save it to the output
-        im.save(output, format='JPEG', quality=90)
+        im.save(output, format='JPEG', quality=80)
         output.seek(0)
 
         # change the imagefield value to be the newly modified image value
