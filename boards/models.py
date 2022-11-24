@@ -4,7 +4,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from io import BytesIO
 from PIL import Image
-from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.core.files import File
 
 User = get_user_model()
 
@@ -24,23 +24,14 @@ class Board(models.Model):
         return self.title
 
     def save(self):
-        # Opening the uploaded image
-        im = Image.open(self.background_img)
-        output = BytesIO()
+        img = Image.open(self.background_img)
+        if img.mode != "RGB":
+            img = img.convert("RGB")
+        img_output = BytesIO()
+        img.save(img_output, 'JPEG', quality=80)
+        self.background_img = File(img_output, name=self.background_img.name)
 
-        # Resize/modify the image
-        im = im.convert('RGB')
-        im = im.resize((100, 100))
-
-        # after modifications, save it to the output
-        im.save(output, format='JPEG', quality=80)
-        output.seek(0)
-
-        # change the imagefield value to be the newly modified image value
-        self.image = InMemoryUploadedFile(output, 'ImageField', "%s.jpg" % self.background_img.name.split('.')[0], 'image/jpeg',
-                                          sys.getsizeof(output), None)
-
-        super(Board, self).save()
+        super().save()
 
 
 class Bar(models.Model):
