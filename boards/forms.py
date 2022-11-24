@@ -2,10 +2,15 @@ from django import forms
 from django.forms.models import inlineformset_factory
 from colorfield.fields import ColorField
 from colorfield.widgets import ColorWidget
-from django.forms.widgets import TextInput
+from django.forms.widgets import TextInput, SelectDateWidget
+from django.forms import DateTimeInput
 
 
 from .models import Bar, CardComment, Card, CardLabel
+
+
+class DateTimePickerInput(DateTimeInput):
+    input_type = 'datetime'
 
 
 class BarForm(forms.ModelForm):
@@ -14,17 +19,28 @@ class BarForm(forms.ModelForm):
         fields = ('title',)
 
 
-class CardForm(forms.ModelForm):
+class CardCreateForm(forms.ModelForm):
+    class Meta:
+        model = Card
+        fields = ('title', 'description', 'deadline')
+        widgets = {
+            'deadline': SelectDateWidget
+        }
+
+
+class CardUpdateForm(forms.ModelForm):
     class Meta:
         model = Card
         fields = ('bar', 'title', 'description', 'deadline')
+        widgets = {
+            'deadline': SelectDateWidget
+        }
 
 
 class CardLabelForm(forms.ModelForm):
     class Meta:
         model = CardLabel
         fields = ('title', 'color')
-        COLOR_CHOICES = ['#8b0000', '#ffff00', '#006400']
         widgets = {
             'color': TextInput(attrs={"type": "color", })
         }

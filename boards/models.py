@@ -16,10 +16,16 @@ class Board(models.Model):
 
     members = models.ManyToManyField(to=User, related_name='boards')
 
+    def __str__(self):
+        return self.title
+
 
 class Bar(models.Model):
     board = models.ForeignKey(to=Board, on_delete=models.CASCADE, related_name='bars')
     title = models.CharField(max_length=30)
+
+    def __str__(self):
+        return self.title
 
 
 class Card(models.Model):
@@ -28,6 +34,9 @@ class Card(models.Model):
     description = models.TextField(max_length=500)
     deadline = models.DateTimeField()
 
+    def __str__(self):
+        return self.title
+
 
 class CardComment(models.Model):
     card = models.ForeignKey(to=Card, on_delete=models.CASCADE, related_name='comments')
@@ -35,10 +44,16 @@ class CardComment(models.Model):
     body = models.TextField(max_length=300)
     created_on = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.body
+
 
 class CardFile(models.Model):
     card = models.ForeignKey(to=Card, on_delete=models.CASCADE, related_name='files')
     file = models.FileField(upload_to='card_files/')
+
+    def __str__(self):
+        return self.file
 
 
 class CardLabel(models.Model):
@@ -47,13 +62,22 @@ class CardLabel(models.Model):
     title = models.CharField(max_length=30)
     color = ColorField(default='#000')
 
+    def __str__(self):
+        return self.title
+
 
 class CardCheckList(models.Model):
     card = models.ForeignKey(to=Card, on_delete=models.CASCADE, related_name='checklists')
     title = models.CharField(max_length=30)
+
+    def __str__(self):
+        return self.title
 
 
 class CardChecklistItem(models.Model):
     checklist = models.ForeignKey(to=CardCheckList, on_delete=models.CASCADE, related_name='items')
     content = models.TextField(max_length=300)
     is_done = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.content

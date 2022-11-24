@@ -1,4 +1,4 @@
-{% extends 'boards/base_board.html' %}
+{% extends 'boards/base_card.html' %}
 {% block content %}
 <section class="section is-small py-5 px-40">
 <div class="container is-max-desktop">
@@ -12,6 +12,13 @@
                     id="card-update"
                     type="button"
                     onclick="location.href='{% url "card-update" board_id card.bar.id card.id %}'"/>
+  </div>
+      <div class="user-email" style="align-items:center;"><label for="card-delete">
+            <p class="mr-5 font-light rounded bg-gray px-1 py-0" style="align-items:center;">Delete</p></label>
+            <input
+                    id="card-delete"
+                    type="button"
+                    onclick="location.href='{% url "card-delete" board_id card.bar.id card.id %}'"/>
         </div>
     </p>
   </div>

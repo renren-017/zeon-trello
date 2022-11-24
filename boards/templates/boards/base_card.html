@@ -14,21 +14,6 @@
                 <a href="{% url 'home' %}" class="mr-5 font-normal leading-6 text-xs text-white lg:inline">
                     <span class="navbar-text"> Home </span>
                 </a>
-                <label for="board-update">
-                    <p class="mr-5 font-normal leading-6 text-xs rounded bg-gray-600 px-4 py-0.5 navbar-button">
-                        Update</p></label>
-                <input
-                        id="board-update"
-                        type="button"
-                        onclick="location.href='{% url "board-update" board.id %}'"/>
-
-                <label for="board-delete">
-                    <p class="mr-5 font-normal leading-6 text-xs rounded bg-gray-600 px-4 py-0.5 navbar-button">
-                        Delete</p></label>
-                <input
-                        id="board-delete"
-                        type="button"
-                        onclick="location.href='{% url "board-delete" board.id %}'"/>
             </nav>
         </div>
         <div class="inline-flex items-center ml-5 space-x-6 lg:justify-end">

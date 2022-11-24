@@ -1,12 +1,12 @@
 from django.shortcuts import render
-from django.views.generic import ListView, DetailView, CreateView, UpdateView
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.views.generic.edit import FormMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy, reverse
 from django.shortcuts import redirect, get_object_or_404
 
 from .models import *
-from .forms import BarForm, CommentForm, labelFormset
+from .forms import BarForm, CommentForm, labelFormset, CardCreateForm, CardUpdateForm
 
 
 class BoardListView(LoginRequiredMixin, ListView):
@@ -37,6 +37,19 @@ class BoardCreateView(CreateView):
         return super().form_valid(form)
 
 
+class BoardUpdateView(UpdateView):
+    model = Board
+    fields = ["title", "background_img", "is_starred", "is_active", "members"]
+
+    def get_success_url(self):
+        return reverse("board-detail", kwargs={'pk': self.kwargs['pk']})
+
+
+class BoardDeleteView(DeleteView):
+    model = Board
+    template_name = 'boards/delete_form.html'
+    success_url = reverse_lazy("home")
+
 class BoardDetailView(DetailView, LoginRequiredMixin, FormMixin):
     login_url = reverse_lazy('login')
     model = Board
@@ -46,7 +59,7 @@ class BoardDetailView(DetailView, LoginRequiredMixin, FormMixin):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['bars'] = Bar.objects.all()
+        context['bars'] = Bar.objects.filter(board=self.object)
         context['form'] = BarForm(initial={'board_id': self.object.id})
         return context
 
@@ -70,11 +83,7 @@ class BoardDetailView(DetailView, LoginRequiredMixin, FormMixin):
 
 class CardCreateView(CreateView):
     model = Card
-    fields = [
-        "title",
-        "description",
-        "deadline",
-    ]
+    form_class = CardCreateForm
 
     def form_valid(self, form):
         form.instance.bar = Bar.objects.get(id=self.kwargs['bar_id'])
@@ -91,15 +100,7 @@ class CardCreateView(CreateView):
 
 class CardUpdateView(UpdateView):
     model = Card
-    fields = [
-        "title",
-        "description",
-        "deadline",
-    ]
-
-    def form_valid(self, form):
-        form.instance.bar = self.object.bar
-        return super().form_valid(form)
+    form_class = CardUpdateForm
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -143,3 +144,13 @@ class CardDetailView(DetailView, LoginRequiredMixin, FormMixin):
             return redirect(reverse('card-detail', kwargs={'board_id': board_id,
                                               'bar_id': bar_id,
                                               'pk': pk}))
+
+
+class CardDeleteView(DeleteView):
+    model = Card
+    template_name = 'boards/delete_form.html'
+
+    def get_success_url(self, **kwargs):
+        return redirect(reverse('card-detail', kwargs={'board_id': self.kwargs['board_id'],
+                                              'bar_id': self.kwargs['bar_id'],
+                                              'pk': self.kwargs['pk']}))
