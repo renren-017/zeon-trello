@@ -23,7 +23,6 @@ class CardAdmin(admin.ModelAdmin):
 admin.site.register(Board, BoardAdmin)
 admin.site.register(Bar, BarAdmin)
 admin.site.register(Card, CardAdmin)
-admin.site.register(CardCheckList)
 admin.site.register(CardChecklistItem)
 admin.site.register(CardFile)
 admin.site.register(CardComment)

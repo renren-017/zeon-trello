@@ -4,6 +4,7 @@ from django.views.generic.edit import FormMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy, reverse
 from django.shortcuts import redirect, get_object_or_404
+from django.db.models import Q
 
 from .models import *
 from .forms import BarForm, CommentForm, labelFormset, CardCreateForm, CardUpdateForm, CardLabelForm
@@ -49,6 +50,7 @@ class BoardDeleteView(DeleteView):
     model = Board
     template_name = 'boards/delete_form.html'
     success_url = reverse_lazy("home")
+
 
 class BoardDetailView(DetailView, LoginRequiredMixin, FormMixin):
     login_url = reverse_lazy('login')
@@ -111,8 +113,8 @@ class CardUpdateView(UpdateView):
 
     def get_success_url(self):
         return reverse('card-detail', kwargs={'board_id': self.kwargs['board_id'],
-                                                       'bar_id': self.get_object().bar.id,
-                                                       'pk': self.get_object().pk})
+                                              'bar_id': self.get_object().bar.id,
+                                              'pk': self.get_object().pk})
 
 
 class CardDetailView(DetailView, LoginRequiredMixin, FormMixin):
@@ -126,7 +128,7 @@ class CardDetailView(DetailView, LoginRequiredMixin, FormMixin):
         context = super().get_context_data(**kwargs)
         context["board_id"] = card.bar.board.id
         context['labels'] = CardLabel.objects.filter(card=card)
-        context['checklists'] = CardCheckList.objects.filter(card=card)
+        context['checklists'] = CardChecklistItem.objects.filter(card=card)
         context['comments'] = CardComment.objects.filter(card=card)
         context['files'] = CardFile.objects.filter(card=card)
         context['form'] = self.get_form()
@@ -142,8 +144,8 @@ class CardDetailView(DetailView, LoginRequiredMixin, FormMixin):
             obj.user = self.request.user
             obj.save()
             return redirect(reverse('card-detail', kwargs={'board_id': board_id,
-                                              'bar_id': bar_id,
-                                              'pk': pk}))
+                                                           'bar_id': bar_id,
+                                                           'pk': pk}))
 
 
 class CardDeleteView(DeleteView):
@@ -194,3 +196,37 @@ class CardFileCreateView(CreateView):
         return reverse('card-detail', kwargs={'board_id': self.kwargs['board_id'],
                                               'bar_id': self.kwargs['bar_id'],
                                               'pk': self.kwargs['pk']})
+
+
+class CardChecklistCreateView(CreateView):
+    model = CardChecklistItem
+    template_name = 'boards/cardlabel_form.html'
+    fields = [
+        'content'
+    ]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        context["board_id"] = self.kwargs['board_id']
+        return context
+
+    def form_valid(self, form):
+        form.instance.card = Card.objects.get(id=self.kwargs['pk'])
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse('card-detail', kwargs={'board_id': self.kwargs['board_id'],
+                                              'bar_id': self.kwargs['bar_id'],
+                                              'pk': self.kwargs['pk']})
+
+
+class SearchResultsView(ListView):
+    model = Board
+    template_name = 'boards/board_list.html'
+
+    def get_queryset(self):
+        query = self.request.GET.get("q")
+        object_list = Board.objects.filter(
+            Q(title__icontains=query) & Q(members__id=self.request.user.pk)
+        )
+        return object_list

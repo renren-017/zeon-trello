@@ -66,16 +66,8 @@ class CardLabel(models.Model):
         return self.title
 
 
-class CardCheckList(models.Model):
-    card = models.ForeignKey(to=Card, on_delete=models.CASCADE, related_name='checklists')
-    title = models.CharField(max_length=30)
-
-    def __str__(self):
-        return self.title
-
-
 class CardChecklistItem(models.Model):
-    checklist = models.ForeignKey(to=CardCheckList, on_delete=models.CASCADE, related_name='items')
+    card = models.ForeignKey(to=Card, on_delete=models.CASCADE, related_name='checklist_items')
     content = models.TextField(max_length=300)
     is_done = models.BooleanField(default=False)
 

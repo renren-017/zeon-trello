@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import BoardListView, BoardDetailView, BoardCreateView, BoardUpdateView, BoardDeleteView,\
-    CardCreateView, CardUpdateView, CardDetailView, CardDeleteView, CardLabelCreateView, CardFileCreateView
+    CardCreateView, CardUpdateView, CardDetailView, CardDeleteView, CardLabelCreateView, CardFileCreateView,\
+    CardChecklistCreateView, SearchResultsView
 
 urlpatterns = [
     path('', BoardListView.as_view(), name='home'),
@@ -42,4 +43,13 @@ urlpatterns = [
         CardFileCreateView.as_view(),
         name="card-file-add",
     ),
+
+    path(
+        "board/<int:board_id>/bar/<int:bar_id>/card/<int:pk>/checklist/add",
+        CardChecklistCreateView.as_view(),
+        name="card-checklist-add",
+    ),
+
+    # search
+    path("search/", SearchResultsView.as_view(), name="search_results"),
 ]

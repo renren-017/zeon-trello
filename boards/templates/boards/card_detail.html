@@ -1,4 +1,4 @@
-{% extends 'boards/base_card.html' %}
+{% extends 'boards/bases/base_card.html' %}
 {% block content %}
 <section class="section is-small py-5 px-40">
 <div class="container is-max-desktop">
@@ -46,7 +46,7 @@
                    {{ label.title }}
                 </p>
             {% endfor %}
-            <label for="card-file-add">
+            <label for="card-label-add">
                 <p class="rounded text-white py-0.1 px-1 mx-1 my-0.5 bg-zinc-500" style="display:inline-block;align-items:center;"> + new label </p></label>
                 <input
                         id="card-label-add"
@@ -54,12 +54,25 @@
                         onclick="location.href='{% url "card-label-add" board_id card.bar.id card.id %}'"/>
         </dd>
       </div>
+
       <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
         <dt class="text-sm font-medium text-gray-500">Checklist</dt>
         <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-            {{ checklist.title }}
+            {% for checklist in checklists %}
+                <input type="checkbox" id="{{ checklist.id }}" name="to-do" value="done">
+                <label for="{{ checklist.id }}">{{checklist.content}}</label><br>
+            {% endfor %}
+
+            <label for="card-checklist-add">
+                <p class="rounded text-white py-0.5 px-1 mx-1 my-1 bg-zinc-500" style="display:inline-block;align-items:center;"> + add to-do </p></label>
+                <input
+                        id="card-checklist-add"
+                        type="button"
+                        onclick="location.href='{% url "card-checklist-add" board_id card.bar.id card.id %}'"/>
         </dd>
       </div>
+
+
       <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
         <dt class="text-sm font-medium text-gray-500">Attachments</dt>
         <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
@@ -86,6 +99,8 @@
                         onclick="location.href='{% url "card-file-add" board_id card.bar.id card.id %}'"/>
         </dd>
       </div>
+
+
         <div class="bg-gray-50 px4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
         <dt class="text-sm font-medium text-gray-500">Comments</dt>
         <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
@@ -102,7 +117,7 @@
             {% for comment in comments %}
                 <p>
                     On {{comment.created_on.date }}&nbsp;
-                    <b>{{ comment.user.first_name }}</b> wrote:
+                    <b>{{ comment.user.email }}</b> wrote:
                 </p>
                 <p>{{ comment.body }}</p>
                 <hr>
