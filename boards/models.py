@@ -60,7 +60,7 @@ class CardLabel(models.Model):
     # + def Board.tags
     card = models.ForeignKey(to=Card, on_delete=models.CASCADE, related_name='labels')
     title = models.CharField(max_length=30)
-    color = ColorField(default='#000')
+    color = models.CharField(default='#000', max_length=7)
 
     def __str__(self):
         return self.title
