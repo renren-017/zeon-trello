@@ -9,10 +9,6 @@ from django.forms import DateTimeInput
 from .models import Bar, CardComment, Card, CardLabel
 
 
-class DateTimePickerInput(DateTimeInput):
-    input_type = 'datetime'
-
-
 class BarForm(forms.ModelForm):
     class Meta:
         model = Bar
@@ -24,7 +20,7 @@ class CardCreateForm(forms.ModelForm):
         model = Card
         fields = ('title', 'description', 'deadline')
         widgets = {
-            'deadline': SelectDateWidget
+            'deadline': DateTimeInput(attrs={"type": "datetime-local", })
         }
 
 
@@ -33,7 +29,7 @@ class CardUpdateForm(forms.ModelForm):
         model = Card
         fields = ('bar', 'title', 'description', 'deadline')
         widgets = {
-            'deadline': SelectDateWidget
+            'deadline': DateTimeInput(attrs={"type": "datetime-local", })
         }
 
 
