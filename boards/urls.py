@@ -1,7 +1,8 @@
 from django.urls import path
+
 from .views import BoardListView, BoardDetailView, BoardCreateView, BoardUpdateView, BoardDeleteView,\
-    CardCreateView, CardUpdateView, CardDetailView, CardDeleteView, CardLabelCreateView, CardFileCreateView,\
-    CardChecklistCreateView, SearchResultsView
+    CardCreateView, CardUpdateView, CardDetailView, CardDeleteView, SearchResultsView
+from .asset_views import CardLabelCreateView, CardFileCreateView, CardChecklistCreateView
 
 urlpatterns = [
     path('', BoardListView.as_view(), name='home'),
@@ -31,7 +32,7 @@ urlpatterns = [
         name="card-delete",
     ),
 
-    # Card Assets Views
+    # Card Assets
     path(
         "board/<int:board_id>/bar/<int:bar_id>/card/<int:pk>/label/add",
         CardLabelCreateView.as_view(),
@@ -50,6 +51,6 @@ urlpatterns = [
         name="card-checklist-add",
     ),
 
-    # search
+    # Search
     path("search/", SearchResultsView.as_view(), name="search_results"),
 ]

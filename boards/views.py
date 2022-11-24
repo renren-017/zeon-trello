@@ -7,8 +7,7 @@ from django.shortcuts import redirect, get_object_or_404
 from django.db.models import Q
 
 from .models import *
-from .forms import BarForm, CommentForm, labelFormset, CardCreateForm, CardUpdateForm, CardLabelForm
-
+from .forms import BarForm, CommentForm, labelFormset, CardCreateForm, CardUpdateForm
 
 class BoardListView(LoginRequiredMixin, ListView):
     login_url = 'accounts/login/'
@@ -153,68 +152,6 @@ class CardDeleteView(DeleteView):
     template_name = 'boards/delete_form.html'
 
     def get_success_url(self, **kwargs):
-        return reverse('card-detail', kwargs={'board_id': self.kwargs['board_id'],
-                                              'bar_id': self.kwargs['bar_id'],
-                                              'pk': self.kwargs['pk']})
-
-
-class CardLabelCreateView(CreateView):
-    model = CardLabel
-    form_class = CardLabelForm
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data()
-        context["board_id"] = self.kwargs['board_id']
-        return context
-
-    def form_valid(self, form):
-        form.instance.card = Card.objects.get(id=self.kwargs['pk'])
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse('card-detail', kwargs={'board_id': self.kwargs['board_id'],
-                                              'bar_id': self.kwargs['bar_id'],
-                                              'pk': self.kwargs['pk']})
-
-
-class CardFileCreateView(CreateView):
-    model = CardFile
-    fields = [
-        'file'
-    ]
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data()
-        context["board_id"] = self.kwargs['board_id']
-        return context
-
-    def form_valid(self, form):
-        form.instance.card = Card.objects.get(id=self.kwargs['pk'])
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse('card-detail', kwargs={'board_id': self.kwargs['board_id'],
-                                              'bar_id': self.kwargs['bar_id'],
-                                              'pk': self.kwargs['pk']})
-
-
-class CardChecklistCreateView(CreateView):
-    model = CardChecklistItem
-    template_name = 'boards/cardlabel_form.html'
-    fields = [
-        'content'
-    ]
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data()
-        context["board_id"] = self.kwargs['board_id']
-        return context
-
-    def form_valid(self, form):
-        form.instance.card = Card.objects.get(id=self.kwargs['pk'])
-        return super().form_valid(form)
-
-    def get_success_url(self):
         return reverse('card-detail', kwargs={'board_id': self.kwargs['board_id'],
                                               'bar_id': self.kwargs['bar_id'],
                                               'pk': self.kwargs['pk']})
