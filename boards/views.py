@@ -72,11 +72,16 @@ class CardCreateView(CreateView):
     form_class = CardCreateForm
 
     def form_valid(self, form):
-        form.instance.bar = Bar.objects.get(id=self.kwargs['bar_id'])
+        form.instance.bar = Bar.objects.get(id=self.kwargs['pk'])
         return super().form_valid(form)
 
-    def get_success_url(self):
-        return reverse("board-detail", kwargs={'pk': self.kwargs['board_id']})
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["success_url"] = self.get_success_url()
+        return context
+
+    def get_success_url(self, **kwargs):
+        return reverse('board-detail', kwargs={'pk': Bar.objects.get(id=self.kwargs['pk']).board.pk})
 
 
 class CardUpdateView(UpdateView):
@@ -86,6 +91,7 @@ class CardUpdateView(UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["success_url"] = self.get_success_url()
         context["labels"] = labelFormset(instance=self.get_object())
         return context
 
@@ -128,11 +134,11 @@ class CardDeleteView(DeleteView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["board_id"] = self.get_object().bar.board.pk
+        context["success_url"] = self.get_success_url()
         return context
 
     def get_success_url(self, **kwargs):
-        return reverse('board-detail', kwargs={'pk': self.get_context_data()['board_id']})
+        return reverse('home')
 
 
 class SearchResultsView(ListView):

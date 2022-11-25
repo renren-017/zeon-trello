@@ -14,7 +14,7 @@ urlpatterns = [
 
     # Cards
     path("card/<int:pk>/", CardDetailView.as_view(), name="card-detail"),
-    path("card/add/", CardCreateView.as_view(), name="card-add"),
+    path("bar/<int:pk>/card/add/", CardCreateView.as_view(), name="card-add"),
     path("card/<int:pk>/update/", CardUpdateView.as_view(), name="card-update"),
     path("card/<int:pk>/delete/", CardDeleteView.as_view(), name="card-delete"),
 
