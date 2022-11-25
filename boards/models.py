@@ -28,7 +28,11 @@ class Board(models.Model):
         if img.mode != "RGB":
             img = img.convert("RGB")
         img_output = BytesIO()
-        img.save(img_output, 'JPEG', quality=80)
+
+        img.save(img_output,
+                 "JPEG",
+                 optimize=True,
+                 quality=40)
         self.background_img = File(img_output, name=self.background_img.name)
 
         super().save()
