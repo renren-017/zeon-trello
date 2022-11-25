@@ -9,6 +9,7 @@ from django.db.models import Q
 from .models import *
 from .forms import BarForm, CommentForm, labelFormset, CardCreateForm, CardUpdateForm
 
+
 class BoardListView(LoginRequiredMixin, ListView):
     login_url = 'accounts/login/'
     template_name = 'boards/board_list.html'
@@ -16,23 +17,14 @@ class BoardListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         return Board.objects.filter(members__id=self.request.user.pk)
 
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['recent_boards'] = self.get_queryset().order_by('-last_modified')[:6]
-        context['starred_boards'] = self.get_queryset().filter(is_starred=True)
-        context['archived_boards'] = self.get_queryset().filter(is_active=False)
-        return context
-
 
 class BoardCreateView(CreateView):
     model = Board
     fields = ["title", "background_img"]
-
-    def get_success_url(self):
-        return reverse('home')
+    success_url = reverse_lazy('home')
 
     def form_valid(self, form):
-        form.instance.save()
+        form.save()
         form.instance.members.add(self.request.user)
         return super().form_valid(form)
 
@@ -64,9 +56,6 @@ class BoardDetailView(DetailView, LoginRequiredMixin, FormMixin):
         context['form'] = BarForm(initial={'board_id': self.object.id})
         return context
 
-    def get_success_url(self):
-        return reverse('post-detail', kwargs={'pk': self.object.id})
-
     def post(self, request, pk):
         board = get_object_or_404(Board, pk=pk)
         form = BarForm(request.POST)
@@ -77,10 +66,6 @@ class BoardDetailView(DetailView, LoginRequiredMixin, FormMixin):
             obj.save()
             return redirect('board-detail', board.pk)
 
-    def form_valid(self, form):
-        form.save()
-        return super(BoardDetailView, self).form_valid(form)
-
 
 class CardCreateView(CreateView):
     model = Card
@@ -90,11 +75,6 @@ class CardCreateView(CreateView):
         form.instance.bar = Bar.objects.get(id=self.kwargs['bar_id'])
         return super().form_valid(form)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data()
-        context["board_id"] = self.kwargs['board_id']
-        return context
-
     def get_success_url(self):
         return reverse("board-detail", kwargs={'pk': self.kwargs['board_id']})
 
@@ -102,18 +82,15 @@ class CardCreateView(CreateView):
 class CardUpdateView(UpdateView):
     model = Card
     form_class = CardUpdateForm
+    context_object_name = 'card'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        context["board_id"] = self.kwargs['board_id']
         context["labels"] = labelFormset(instance=self.get_object())
         return context
 
     def get_success_url(self):
-        return reverse('card-detail', kwargs={'board_id': self.kwargs['board_id'],
-                                              'bar_id': self.get_object().bar.id,
-                                              'pk': self.get_object().pk})
+        return reverse('card-detail', kwargs={'pk': self.get_object().pk})
 
 
 class CardDetailView(DetailView, LoginRequiredMixin, FormMixin):
@@ -133,7 +110,7 @@ class CardDetailView(DetailView, LoginRequiredMixin, FormMixin):
         context['form'] = self.get_form()
         return context
 
-    def post(self, request, board_id, bar_id, pk):
+    def post(self, request, pk):
         card = get_object_or_404(Card, pk=pk)
         form = CommentForm(request.POST)
 
@@ -142,19 +119,20 @@ class CardDetailView(DetailView, LoginRequiredMixin, FormMixin):
             obj.card = card
             obj.user = self.request.user
             obj.save()
-            return redirect(reverse('card-detail', kwargs={'board_id': board_id,
-                                                           'bar_id': bar_id,
-                                                           'pk': pk}))
+            return redirect(reverse('card-detail', kwargs={'pk': pk}))
 
 
 class CardDeleteView(DeleteView):
     model = Card
     template_name = 'boards/delete_form.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["board_id"] = self.get_object().bar.board.pk
+        return context
+
     def get_success_url(self, **kwargs):
-        return reverse('card-detail', kwargs={'board_id': self.kwargs['board_id'],
-                                              'bar_id': self.kwargs['bar_id'],
-                                              'pk': self.kwargs['pk']})
+        return reverse('board-detail', kwargs={'pk': self.get_context_data()['board_id']})
 
 
 class SearchResultsView(ListView):

@@ -11,14 +11,14 @@
             <input
                     id="card-update"
                     type="button"
-                    onclick="location.href='{% url "card-update" board_id card.bar.id card.id %}'"/>
+                    onclick="location.href='{% url "card-update" card.id %}'"/>
   </div>
       <div class="user-email" style="align-items:center;"><label for="card-delete">
             <p class="mr-5 font-light rounded bg-gray px-1 py-0" style="align-items:center;">Delete</p></label>
             <input
                     id="card-delete"
                     type="button"
-                    onclick="location.href='{% url "card-delete" board_id card.bar.id card.id %}'"/>
+                    onclick="location.href='{% url "card-delete" card.id %}'"/>
         </div>
     </p>
   </div>
@@ -51,7 +51,7 @@
                 <input
                         id="card-label-add"
                         type="button"
-                        onclick="location.href='{% url "card-label-add" board_id card.bar.id card.id %}'"/>
+                        onclick="location.href='{% url "card-label-add" card.id %}'"/>
         </dd>
       </div>
 
@@ -68,7 +68,7 @@
                 <input
                         id="card-checklist-add"
                         type="button"
-                        onclick="location.href='{% url "card-checklist-add" board_id card.bar.id card.id %}'"/>
+                        onclick="location.href='{% url "card-checklist-add" card.id %}'"/>
         </dd>
       </div>
 
@@ -96,7 +96,7 @@
                 <input
                         id="card-file-add"
                         type="button"
-                        onclick="location.href='{% url "card-file-add" board_id card.bar.id card.id %}'"/>
+                        onclick="location.href='{% url "card-file-add" card.id %}'"/>
         </dd>
       </div>
 
@@ -104,7 +104,7 @@
         <div class="bg-gray-50 px4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
         <dt class="text-sm font-medium text-gray-500">Comments</dt>
         <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-            <form action="/board/{{ board_id }}/bar/{{ card.bar.id }}/card/{{card.id}}" method="post">
+            <form action="card/{{ card.id }}" method="post">
                 {% csrf_token %}
                 <div class="form-group">
                     {{ form.author }}

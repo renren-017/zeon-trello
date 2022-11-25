@@ -150,7 +150,7 @@
                 <ul id="new-jobs-list">
                     {% for card in bar.cards.all %}
                     <li>
-                        <a href="{% url 'card-detail' board.id bar.id card.id %}">
+                        <a href="{% url 'card-detail' card.id %}">
                         <div draggable="true" class="job-block" id="card">
                             <div class="job-name-block">
                                 <div class="job-name"><p class="text-xs is-size-7">{{ card.title }}</p></div>
@@ -173,7 +173,7 @@
                         <input
                                 id="card-add"
                                 type="button"
-                                onclick="location.href='{% url "card-add" board.id bar.id %}'"/>
+                                onclick="location.href='{% url "card-add" %}'"/>
                     </li>
                 </ul>
             </div>
@@ -185,7 +185,7 @@
         <div class="jobs-list">
             <h2 class="jobs-list-heading">{{ bar.title }}</h2>
             <div class="jobs-list-body" id="new-bar">
-                <form action="/{{ board.pk }}/" method="post">
+                <form action="/board/{{ board.pk }}/" method="post">
                     {% csrf_token %}
                     <div class="form-group" style="max-width: 50x;">
                         {{ form.title }}
