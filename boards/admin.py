@@ -3,19 +3,19 @@ from .models import *
 
 
 class BoardAdmin(admin.ModelAdmin):
-    list_display = ('title', 'background_img', 'is_starred', 'is_active', 'created_on', 'last_modified')
+    list_display = ('id', 'title', 'background_img', 'is_starred', 'is_active', 'created_on', 'last_modified')
     list_filter = ('is_starred', 'is_active')
     search_fields = ('members', 'title')
 
 
 class BarAdmin(admin.ModelAdmin):
-    list_display = ('title', 'board')
+    list_display = ('id', 'title', 'board')
     list_filter = ('board',)
     search_fields = ('title',)
 
 
 class CardAdmin(admin.ModelAdmin):
-    list_display = ('title', 'bar', 'description', 'deadline')
+    list_display = ('id', 'title', 'bar', 'description', 'deadline')
     list_filter = ('bar',)
     search_fields = ('title',)
 

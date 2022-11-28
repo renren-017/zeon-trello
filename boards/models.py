@@ -13,7 +13,7 @@ class Board(models.Model):
     title = models.CharField(max_length=50)
     background_img = models.ImageField(upload_to='back_img/')
     is_starred = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
 
     created_on = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)

@@ -5,7 +5,6 @@ from colorfield.widgets import ColorWidget
 from django.forms.widgets import TextInput, SelectDateWidget
 from django.forms import DateTimeInput
 
-
 from .models import Bar, CardComment, Card, CardLabel
 
 
@@ -13,6 +12,9 @@ class BarForm(forms.ModelForm):
     class Meta:
         model = Bar
         fields = ('title',)
+        # widgets = (
+        #     'title': TextInput()
+        # )
 
 
 class CardCreateForm(forms.ModelForm):

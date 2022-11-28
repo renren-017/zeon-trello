@@ -6,6 +6,7 @@
       <form method="post">{% csrf_token %}
          <p>Are you sure you want to delete "{{ object }}"?</p>
          <input type="submit" value="Confirm">
+         <button type="button" onclick="window.history.back()">cancel</button>
       </form>
    </body>
 </html>

@@ -41,6 +41,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'rest_framework',
+    'rest_framework.authtoken',
+    'drf_yasg',
+
     'users',
     'boards',
 
@@ -50,6 +54,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'rest_auth',
 
     'crispy_forms',
     'crispy_bootstrap5',
@@ -68,11 +73,13 @@ CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 # Allauth
 SITE_ID = 1
+ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+OLD_PASSWORD_FIELD_ENABLED = True
 
 LOGIN_REDIRECT_URL = 'home'
 
@@ -105,6 +112,16 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
+
+# REST API
+
+# REST_FRAMEWORK = {
+#     'DEFAULT_PARSER_CLASSES': [
+#         'rest_framework.parsers.FormParser',
+#         'rest_framework.parsers.MultiPartParser',
+#         'rest_framework.parsers.JSONParser',
+#     ]
+# }
 
 
 MIDDLEWARE = [
