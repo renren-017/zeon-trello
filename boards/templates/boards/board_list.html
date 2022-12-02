@@ -26,14 +26,14 @@
                     </g>
                 </g>
               </svg>
-              <p style="display:inline-block;color:#086ca4;" class="is-size-7 has-text-weight-bold">Boards</p>
+              <p style="display:inline-block;color:#086ca4;" class="is-size-7 has-text-weight-bold">{{ project.title }}</p>
           </span>
                 <hr>
             </div>
             <div class="column is-four-fifths">
                 <div class="container"
                      style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); grid-gap: 0.5em;">
-                    {% for board in object_list %}
+                    {% for board in boards %}
                     <a href="{% url 'board-detail' board.pk %}">
                         <div class="card">
                             <div class="card-image">

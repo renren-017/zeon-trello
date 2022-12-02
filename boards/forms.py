@@ -5,22 +5,22 @@ from colorfield.widgets import ColorWidget
 from django.forms.widgets import TextInput, SelectDateWidget
 from django.forms import DateTimeInput
 
-from .models import Bar, CardComment, Card, CardLabel
+from .models import Column, CardComment, Card, Mark
 
 
 class BarForm(forms.ModelForm):
     class Meta:
-        model = Bar
+        model = Column
         fields = ('title',)
-        # widgets = (
-        #     'title': TextInput()
-        # )
+        widgets = {
+            'title': TextInput(attrs={'style': 'width: 100%; max-height: 100%', 'class': 'text-xs is-size-7',})
+        }
 
 
 class CardCreateForm(forms.ModelForm):
     class Meta:
         model = Card
-        fields = ('title', 'description', 'deadline')
+        fields = ('title', 'description', 'deadline', 'checklist')
         widgets = {
             'deadline': DateTimeInput(attrs={"type": "datetime-local", })
         }
@@ -37,21 +37,11 @@ class CardUpdateForm(forms.ModelForm):
 
 class CardLabelForm(forms.ModelForm):
     class Meta:
-        model = CardLabel
+        model = Mark
         fields = ('title', 'color')
         widgets = {
             'color': TextInput(attrs={"type": "color", })
         }
-
-
-labelFormset = inlineformset_factory(
-    Card,
-    CardLabel,
-    form=CardLabelForm,
-    extra=1,
-    can_delete=False,
-)
-
 
 class CommentForm(forms.ModelForm):
     class Meta:

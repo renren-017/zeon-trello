@@ -1,14 +1,18 @@
 from django.urls import path
 
-from .views import BoardListView, BoardDetailView, BoardCreateView, BoardUpdateView, BoardDeleteView,\
-    CardCreateView, CardUpdateView, CardDetailView, CardDeleteView, SearchResultsView
-from .asset_views import CardLabelCreateView, CardFileCreateView, CardChecklistCreateView, CardCommentCreateView
+from .views import ProjectDetailView, BoardDetailView, BoardCreateView, BoardUpdateView, BoardDeleteView,\
+    CardCreateView, CardUpdateView, CardDetailView, CardDeleteView, SearchResultsView, ProjectListView, \
+    ProjectCreateView
+from .asset_views import CardLabelCreateView, CardFileCreateView, CardCommentCreateView
 
 urlpatterns = [
     # Boards
-    path("boards/", BoardListView.as_view(), name='home'),
+    path("projects/", ProjectListView.as_view(), name='home'),
+    path("project/add/", ProjectCreateView.as_view(), name='project-add'),
+    path("project/<int:pk>/", ProjectDetailView.as_view(), name='project-detail'),
+
     path("board/<int:pk>/", BoardDetailView.as_view(), name="board-detail"),
-    path("board/add/", BoardCreateView.as_view(), name="board-add"),
+    path("project/<int:pk>/board/add/", BoardCreateView.as_view(), name="board-add"),
     path("board/<int:pk>/update/", BoardUpdateView.as_view(), name="board-update"),
     path("board/<int:pk>/delete/", BoardDeleteView.as_view(), name="board-delete"),
 
@@ -32,7 +36,7 @@ urlpatterns = [
 
     # Card Checklists
     # path("card_checklist/<int:pk>/", CardChecklistDetailView.as_view(), name="card-checklist-detail"),
-    path("card/<int:pk>/checklist/add/", CardChecklistCreateView.as_view(), name="card-checklist-add"),
+    # path("card/<int:pk>/checklist/add/", CardChecklistCreateView.as_view(), name="card-checklist-add"),
     # path("card_checklist/<int:pk>/update/", CardChecklistUpdateView.as_view(), name="card-checklist-update"),
     # path("card_checklist/<int:pk>/delete/", CardChecklistDeleteView.as_view(), name="card-checklist-delete"),
 

@@ -6,7 +6,7 @@ from .forms import CardLabelForm
 
 
 class CardLabelCreateView(CreateView):
-    model = CardLabel
+    model = Mark
     form_class = CardLabelForm
     template_name = 'boards/asset_form.html'
 
@@ -33,23 +33,23 @@ class CardFileCreateView(CreateView):
         return reverse('card-detail', kwargs={'pk': self.kwargs['pk']})
 
 
-class CardChecklistCreateView(CreateView):
-    model = CardChecklistItem
-    template_name = 'boards/asset_form.html'
-    fields = [
-        'content'
-    ]
-
-    def form_valid(self, form):
-        form.instance.card = Card.objects.get(id=self.kwargs['pk'])
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse('card-detail', kwargs={'pk': self.kwargs['pk']})
-
-
+# class CardChecklistCreateView(CreateView):
+#     model = CardChecklistItem
+#     template_name = 'boards/asset_form.html'
+#     fields = [
+#         'content'
+#     ]
+#
+#     def form_valid(self, form):
+#         form.instance.card = Card.objects.get(id=self.kwargs['pk'])
+#         return super().form_valid(form)
+#
+#     def get_success_url(self):
+#         return reverse('card-detail', kwargs={'pk': self.kwargs['pk']})
+#
+#
 class CardCommentCreateView(CreateView):
-    model = CardChecklistItem
+    model = CardComment
     template_name = 'boards/asset_form.html'
     fields = [
         'body'

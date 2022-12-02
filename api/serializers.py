@@ -1,23 +1,31 @@
 from rest_framework import serializers
-from boards.models import Board, Bar, Card, CardLabel, CardComment, CardFile, CardChecklistItem
-
+from boards.models import Project, Board, Column, Card, Mark, CardComment, CardFile, BoardMember, BoardFavourite, \
+    BoardLastSeen
+from django.contrib.auth import get_user_model
 from django.utils import timezone
+
+
+User = get_user_model()
+
+
+class UserSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    email = serializers.EmailField()
 
 
 class BoardSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
+    project = serializers.PrimaryKeyRelatedField(read_only=True)
     title = serializers.CharField(max_length=50)
     background_img = serializers.ImageField()
-    is_starred = serializers.BooleanField(read_only=True)
-    is_active = serializers.BooleanField(read_only=True)
 
     created_on = serializers.DateTimeField(read_only=True)
     last_modified = serializers.DateTimeField(read_only=True)
 
-    members = serializers.StringRelatedField(many=True, read_only=True)
-
     def create(self, validated_data):
+        project = Project.objects.get(pk=validated_data['project'])
         board = Board(title=validated_data['title'],
+                      project=project,
                       background_img=validated_data['background_img'])
         board.save()
 
@@ -26,17 +34,50 @@ class BoardSerializer(serializers.Serializer):
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
         instance.background_img = validated_data.get('background_img', instance.background_img)
-        instance.is_active = validated_data.get('is_active', instance.is_active)
-        instance.is_starred = validated_data.get('is_starred', instance.is_starred)
+        instance.save()
+        return instance
+
+
+class BoardDetailSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    project = serializers.PrimaryKeyRelatedField(read_only=True)
+    title = serializers.CharField(max_length=50, required=False)
+    background_img = serializers.ImageField(required=False)
+
+    created_on = serializers.DateTimeField(read_only=True)
+    last_modified = serializers.DateTimeField(read_only=True)
+
+    def create(self, validated_data):
+        pass
+
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        instance.background_img = validated_data.get('background_img', instance.background_img)
         instance.save()
         return instance
 
     def to_representation(self, instance):
+        members = [member.member for member in BoardMember.objects.filter(board=instance)]
         representation = super().to_representation(instance)
         representation['bars'] = BarSerializer(instance.bars.all(), many=True, context=self.context).data
+        representation['members'] = UserSerializer(members, many=True, context=self.context).data
         return representation
 
 
+class BoardFavouriteSerializer(serializers.Serializer):
+    board = serializers.IntegerField(read_only=True)
+    user = serializers.IntegerField(read_only=True)
+
+    def create(self, validated_data):
+        board_favourite = BoardFavourite(
+            board=validated_data['board'],
+            user=validated_data['user']
+        )
+        board_favourite.save()
+        return board_favourite
+
+    def update(self, instance, validated_data):
+        pass
 
 
 class BarSerializer(serializers.Serializer):
@@ -46,7 +87,7 @@ class BarSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         board = Board.objects.get(pk=validated_data['board'])
-        bar = Bar(
+        bar = Column(
             board=board,
             title=validated_data['title']
         )
@@ -67,7 +108,7 @@ class CardSerializer(serializers.Serializer):
     deadline = serializers.DateTimeField()
 
     def create(self, validated_data):
-        bar = Bar.objects.get(pk=validated_data['bar'])
+        bar = Column.objects.get(pk=validated_data['bar'])
         card = Card(
             bar=bar,
             title=validated_data['title'],
@@ -86,7 +127,7 @@ class CardLabelSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         card = Card.objects.get(pk=validated_data['card'])
-        card = CardLabel(
+        card = Mark(
             card=card,
             title=validated_data['title'],
             color=validated_data['color']
@@ -140,3 +181,27 @@ class CardChecklistItemSerializer(serializers.Serializer):
         )
         card_checklist_item.save()
         return card_checklist_item.save()
+
+class ProjectSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    title = serializers.CharField(max_length=50)
+    owner = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    def create(self, validated_data):
+        project = Project(
+            title=validated_data['title'],
+            owner=validated_data['owner']
+        )
+        project.save()
+        return project
+
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        instance.owner = validated_data.get('owner', instance.owner)
+        instance.save()
+        return instance
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['boards'] = BoardSerializer(instance.boards.all(), many=True, context=self.context).data
+        return representation

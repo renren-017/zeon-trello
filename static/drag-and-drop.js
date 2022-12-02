@@ -1,29 +1,36 @@
-function dragOverHandler(e) {
-    e.preventDefault()
-    if (e.target.className == 'job-block') {
-        e.target.style.BoxShadow = '0 2px 3px gray'
-    }
-}
+for (element of document.getElementsByClassName('column')) {
+        new Dragster(element);
+        element.addEventListener('dragover', e => {
+            if (e.preventDefault) e.preventDefault();
+        });
+        element.addEventListener('dragster:enter', e => {
+            e.currentTarget.classList.add('dropme')
+        });
+        element.addEventListener('dragster:leave', e => {
+            e.currentTarget.classList.remove('dropme')
+        });
+        element.addEventListener('drop', e => {
+            e.currentTarget.classList.remove('dropme')
+            const postData = JSON.stringify({
+                'column_id': e.currentTarget.dataset.columnId,
+                'card_id': e.dataTransfer.getData('Text'),
+            });
 
-function dragLeaveHandler(e) {
-    e.target.style.BoxShadow = 'none'
-}
+            fetch('/drop/', {
+                credentials: 'same-origin',
+                method: 'post',
+                headers: {
+                    'X-CSRFToken': cookies['csrftoken'],
+                },
+                body: postData,
+            }).then(response => {
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert('Error! ' + response.statusText);
+                }
+            }).catch(err => {
+                console.log(err);
+            });
 
-function dragStartHandler(e) {
-}
-
-function dragEndHandler(e) {
-    e.target.style.BoxShadow = 'none'
-}
-
-function dropHandler(e) {
-    e.preventDefault()
-}
-
-const elem = document.getElementById('card');
-
-elem.ondragover = (e) => dragOverHandler(e)
-elem.ondragleave = (e) => dragLeaveHandler(e)
-elem.ondragstart = (e) => dragStartHandler(e)
-elem.ondragend = (e) => dragEndHandler(e)
-elem.ondrop = (e) => dropHandler(e)
+        });

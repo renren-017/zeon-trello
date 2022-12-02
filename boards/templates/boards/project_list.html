@@ -1,0 +1,55 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+
+
+{% extends 'boards/bases/base_projects.html' %}
+{% load static %}
+
+{% block content %}
+<section class="section is-small py-5 px-40">
+    <div class="container is-max-desktop">
+        <div class="columns">
+            <div class="column">
+          <span>
+              <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="12" height="12"
+                   viewBox="0 0 256 256" version="1.1" preserveAspectRatio="xMidYMid" style="display:inline-block;">
+                <defs>
+                    <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-1">
+                        <stop stop-color="#0091E6" offset="0%"/>
+                        <stop stop-color="#0079BF" offset="100%"/>
+                    </linearGradient>
+                </defs>
+                <g>
+                    <g>
+                        <rect fill="url(#linearGradient-1)" x="0" y="0" width="256" height="256" rx="25"/>
+                        <rect fill="#FFFFFF" x="144.64" y="33.28" width="78.08" height="112" rx="12"/>
+                        <rect fill="#FFFFFF" x="33.28" y="33.28" width="78.08" height="176" rx="12"/>
+                    </g>
+                </g>
+              </svg>
+              <p style="display:inline-block;color:#086ca4;" class="is-size-7 has-text-weight-bold">Projects</p>
+          </span>
+                <hr>
+            </div>
+            <div class="column is-four-fifths">
+                <div>
+                    {% for project in object_list %}
+                        <a href="#" class="block max-w-sm p-3 bg-white border border-gray-200 rounded-lg shadow-md
+                        hover:bg-gray-100 dark:bg-gray-400 dark:border-gray-500 dark:hover:bg-gray-700">
+                            <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+                                {{ project.title }}</h5>
+                        </a>
+                    {% empty %}
+                        <a href="#" class="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow-md
+                        hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+                            <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+                                No projects yet.
+                            </h5>
+
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

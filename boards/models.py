@@ -2,43 +2,48 @@ import sys
 
 from django.db import models
 from django.contrib.auth import get_user_model
-from io import BytesIO
-from PIL import Image
-from django.core.files import File
 
 User = get_user_model()
 
 
+class Project(models.Model):
+    title = models.CharField(max_length=50)
+    owner = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name='projects')
+
+
 class Board(models.Model):
+    project = models.ForeignKey(to=Project, on_delete=models.CASCADE, related_name='boards')
     title = models.CharField(max_length=50)
     background_img = models.ImageField(upload_to='back_img/')
-    is_starred = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
+    is_archived = models.BooleanField(default=True)
 
     created_on = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
 
-    members = models.ManyToManyField(to=User, related_name='boards')
-
     def __str__(self):
         return self.title
 
-    def save(self):
-        img = Image.open(self.background_img)
-        if img.mode != "RGB":
-            img = img.convert("RGB")
-        img_output = BytesIO()
 
-        img.save(img_output,
-                 "JPEG",
-                 optimize=True,
-                 quality=40)
-        self.background_img = File(img_output, name=self.background_img.name)
+class BoardMember(models.Model):
+    board = models.ForeignKey(to=Board, on_delete=models.CASCADE, related_name='members')
+    member = models.ForeignKey(to=User, on_delete=models.CASCADE)
 
-        super().save()
+    def __str__(self):
+        return f'{self.board.id}:{self.member.id}'
 
 
-class Bar(models.Model):
+class BoardLastSeen(models.Model):
+    board = models.ForeignKey(to=Board, on_delete=models.CASCADE)
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name='last_seen_boards')
+    timestamp = models.DateTimeField(auto_now=True)
+
+
+class BoardFavourite(models.Model):
+    board = models.ForeignKey(to=Board, on_delete=models.CASCADE)
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name='favourite_boards')
+
+
+class Column(models.Model):
     board = models.ForeignKey(to=Board, on_delete=models.CASCADE, related_name='bars')
     title = models.CharField(max_length=30)
 
@@ -47,10 +52,11 @@ class Bar(models.Model):
 
 
 class Card(models.Model):
-    bar = models.ForeignKey(to=Bar, on_delete=models.CASCADE, related_name='cards')
+    bar = models.ForeignKey(to=Column, on_delete=models.CASCADE, related_name='cards')
     title = models.CharField(max_length=30)
     description = models.TextField(max_length=500)
     deadline = models.DateTimeField()
+    checklist = models.JSONField()
 
     def __str__(self):
         return self.title
@@ -74,9 +80,8 @@ class CardFile(models.Model):
         return self.file
 
 
-class CardLabel(models.Model):
-    # + def Board.tags
-    card = models.ForeignKey(to=Card, on_delete=models.CASCADE, related_name='labels')
+class Mark(models.Model):
+    board = models.ForeignKey(to=Board, on_delete=models.CASCADE, related_name='marks')
     title = models.CharField(max_length=30)
     color = models.CharField(default='#000', max_length=7)
 
@@ -84,10 +89,9 @@ class CardLabel(models.Model):
         return self.title
 
 
-class CardChecklistItem(models.Model):
-    card = models.ForeignKey(to=Card, on_delete=models.CASCADE, related_name='checklist_items')
-    content = models.TextField(max_length=300)
-    is_done = models.BooleanField(default=False)
+class CardMark(models.Model):
+    mark = models.ForeignKey(to=Mark, on_delete=models.CASCADE)
+    card = models.ForeignKey(to=Card, on_delete=models.CASCADE, related_name='marks')
 
     def __str__(self):
-        return self.content
+        return self.mark

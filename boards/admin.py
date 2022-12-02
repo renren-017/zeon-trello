@@ -3,9 +3,8 @@ from .models import *
 
 
 class BoardAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'background_img', 'is_starred', 'is_active', 'created_on', 'last_modified')
-    list_filter = ('is_starred', 'is_active')
-    search_fields = ('members', 'title')
+    list_display = ('id', 'title', 'background_img', 'created_on', 'last_modified')
+    search_fields = ('title',)
 
 
 class BarAdmin(admin.ModelAdmin):
@@ -20,10 +19,11 @@ class CardAdmin(admin.ModelAdmin):
     search_fields = ('title',)
 
 
-admin.site.register(Board, BoardAdmin)
-admin.site.register(Bar, BarAdmin)
+# admin.site.register(Board, BoardAdmin)
+admin.site.register(Column, BarAdmin)
+admin.site.register(BoardMember)
+admin.site.register(BoardLastSeen)
 admin.site.register(Card, CardAdmin)
-admin.site.register(CardChecklistItem)
 admin.site.register(CardFile)
 admin.site.register(CardComment)
-admin.site.register(CardLabel)
+admin.site.register(Mark)

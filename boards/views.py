@@ -7,15 +7,47 @@ from django.shortcuts import redirect, get_object_or_404
 from django.db.models import Q
 
 from .models import *
-from .forms import BarForm, CommentForm, labelFormset, CardCreateForm, CardUpdateForm
+from .forms import BarForm, CommentForm, CardCreateForm, CardUpdateForm
 
 
-class BoardListView(LoginRequiredMixin, ListView):
+class ProjectListView(LoginRequiredMixin, ListView):
     login_url = 'accounts/login/'
     template_name = 'boards/board_list.html'
 
-    def get_queryset(self):
-        return Board.objects.filter(members__id=self.request.user.pk)
+    def get_context_data(self, **kwargs):
+        projects = Project.objects.filter(owner=self.request.user)
+        context = super().get_context_data(**kwargs)
+        context['user_boards'] = Board.objects.filter(projects__in=projects)
+        boards = [member.board for member in BoardMember.objects.filter(member=self.request.user)]
+        context['guest_boards'] = [board for board in boards]
+        context['boards'] = Board.objects.filter(project=project)
+        return context
+
+
+class ProjectCreateView(CreateView):
+    model = Project
+    fields = ["title"]
+    template_name = "boards/board_form.html"
+    success_url = reverse_lazy('home')
+
+    def form_valid(self, form):
+        form.instance.owner = self.request.user
+        form.save()
+        return super().form_valid(form)
+
+
+class ProjectDetailView(LoginRequiredMixin, ListView):
+    login_url = 'accounts/login/'
+    template_name = 'boards/board_list.html'
+    model = Project
+    context_object_name = 'project'
+
+    def get_context_data(self, **kwargs):
+        project = Project.objects.get(pk=self.kwargs['pk'])
+        context = super().get_context_data(**kwargs)
+        context['project'] = project
+        context['boards'] = Board.objects.filter(project=project)
+        return context
 
 
 class BoardCreateView(CreateView):
@@ -24,14 +56,13 @@ class BoardCreateView(CreateView):
     success_url = reverse_lazy('home')
 
     def form_valid(self, form):
-        form.save()
-        form.instance.members.add(self.request.user)
+        form.instance.project = Project.objects.get(pk=self.kwargs['pk'])
         return super().form_valid(form)
 
 
 class BoardUpdateView(UpdateView):
     model = Board
-    fields = ["title", "background_img", "is_starred", "is_active", "members"]
+    fields = ["title", "background_img", "is_starred", "is_archived"]
 
     def get_success_url(self):
         return reverse("board-detail", kwargs={'pk': self.kwargs['pk']})
@@ -52,7 +83,7 @@ class BoardDetailView(DetailView, LoginRequiredMixin, FormMixin):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['bars'] = Bar.objects.filter(board=self.object)
+        context['bars'] = Column.objects.filter(board=self.object)
         context['form'] = BarForm(initial={'board_id': self.object.id})
         return context
 
@@ -72,7 +103,7 @@ class CardCreateView(CreateView):
     form_class = CardCreateForm
 
     def form_valid(self, form):
-        form.instance.bar = Bar.objects.get(id=self.kwargs['pk'])
+        form.instance.bar = Column.objects.get(id=self.kwargs['pk'])
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
@@ -81,7 +112,7 @@ class CardCreateView(CreateView):
         return context
 
     def get_success_url(self, **kwargs):
-        return reverse('board-detail', kwargs={'pk': Bar.objects.get(id=self.kwargs['pk']).board.pk})
+        return reverse('board-detail', kwargs={'pk': Column.objects.get(id=self.kwargs['pk']).board.pk})
 
 
 class CardUpdateView(UpdateView):
@@ -109,8 +140,7 @@ class CardDetailView(DetailView, LoginRequiredMixin, FormMixin):
         card = self.get_object()
         context = super().get_context_data(**kwargs)
         context["board_id"] = card.bar.board.id
-        context['labels'] = CardLabel.objects.filter(card=card)
-        context['checklists'] = CardChecklistItem.objects.filter(card=card)
+        context['labels'] = Mark.objects.filter(card=card)
         context['comments'] = CardComment.objects.filter(card=card)
         context['files'] = CardFile.objects.filter(card=card)
         context['form'] = self.get_form()

@@ -14,7 +14,7 @@
 	***********************************************************/
 
 	.jobs-list{
-		width: 220px;
+		width: 272px;
 		margin: 0 5px 30px 0px;
 
 		display: inline-block;
@@ -28,12 +28,11 @@
 		font-family: "Lato";
 		font-size: 10px;
 		font-weight: bold;
-		margin: 9px;
+		margin: 5px;
 	}
 
 	.jobs-list-body{
-		margin-right: 5px;
-		margin-left: 9px;
+		margin: 5px;
 		overflow: auto;
 	}
 
@@ -61,8 +60,7 @@
 		cursor: pointer;
 		display: block;
 		margin-bottom: 6px;
-		width: 94%;
-		max-width: 300px;
+		max-width: 100%;
 		min-height: 20px;
 		position: relative;
 		text-decoration: none;
@@ -147,7 +145,7 @@
         <div class="jobs-list">
             <h2 class="jobs-list-heading">{{ bar.title }}</h2>
             <div class="jobs-list-body" id="new-jobs">
-                <ul id="new-jobs-list">
+                <ul id="new-jobs-list column">
                     {% for card in bar.cards.all %}
                     <li>
                         <a href="{% url 'card-detail' card.id %}">
@@ -166,12 +164,12 @@
                     </li>
                     {% endfor %}
                     <li>
-                        <label for="card-add">
-                            <p class="mr-5 font-normal leading-6 text-xs rounded text-gray px-4 py-0.5">Add a
-                                card</p>
+                        <label for="card-add{{ bar.id }}">
+                            <p class="leading-6 text-xs rounded hover:bg-gray-200 font-medium text-gray-500 px-4 py-0.5">
+                                + Add a new Card</p>
                         </label>
                         <input
-                                id="card-add"
+                                id="card-add{{ bar.id }}"
                                 type="button"
                                 onclick="location.href='{% url "card-add" bar.id %}'"/>
                     </li>
@@ -187,11 +185,12 @@
             <div class="jobs-list-body" id="new-bar">
                 <form action="/board/{{ board.pk }}/" method="post">
                     {% csrf_token %}
-                    <div class="form-group" style="max-width: 50x;">
+                    <div class="form-group" style="max-width: 100%;">
                         {{ form.title }}
                     </div>
                     <div class="container">
-                        <button type="submit" class="button is-light is-size-7 text-xs">Create new bar</button>
+                        <button type="submit" class="button is-light font-medium text-gray-500 is-size-7 text-xs">
+                            Press enter to add a new bar</button>
                     </div>
 
                 </form>
