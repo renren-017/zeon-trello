@@ -43,7 +43,7 @@ class ProjectTest(TestCase):
 
         response = self.client.get(reverse('api-project-detail', kwargs={'pk': 1}), format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 3)
+        self.assertEqual(len(response.data), 4)
 
     def test_project_post(self):
         data = {

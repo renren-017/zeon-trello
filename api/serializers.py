@@ -69,12 +69,7 @@ class BoardFavouriteSerializer(serializers.Serializer):
     user = serializers.IntegerField(read_only=True)
 
     def create(self, validated_data):
-        board_favourite = BoardFavourite(
-            board=validated_data['board'],
-            user=validated_data['user']
-        )
-        board_favourite.save()
-        return board_favourite
+        pass
 
     def update(self, instance, validated_data):
         pass

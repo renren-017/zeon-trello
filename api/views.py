@@ -6,12 +6,19 @@ from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
 from drf_yasg.utils import swagger_auto_schema
 
-from .serializers import BoardSerializer, BarSerializer, CardSerializer, CardLabelSerializer, \
-    CardFileSerializer, CardCommentSerializer, CardChecklistItemSerializer, ProjectSerializer, BoardDetailSerializer, \
-    BoardFavouriteSerializer
+from .serializers import (BoardSerializer, BoardDetailSerializer, BoardFavouriteSerializer,
+                          BarSerializer,
+                          CardSerializer,
+                          CardLabelSerializer,
+                          CardFileSerializer,
+                          CardCommentSerializer,
+                          CardChecklistItemSerializer,
+                          ProjectSerializer,)
 from .permissions import OwnerOrReadOnly, IsBoardOwnerOrMember, IsBoardMember
-from boards.models import Board, Column, Card, Mark, CardFile, CardComment, Project, BoardMember, BoardLastSeen, \
-    BoardFavourite
+from boards.models import (Board, Column,
+                           Card, Mark, CardFile, CardComment,
+                           Project,
+                           BoardMember, BoardLastSeen, BoardFavourite)
 
 
 class ProjectView(APIView):
@@ -142,18 +149,27 @@ class BoardDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class BoardsFavouriteView(APIView):
+class BoardsFavouriteDetailView(APIView):
     permission_classes = (IsBoardMember,)
 
-    @swagger_auto_schema(request_body=BoardSerializer, operation_summary='Creates a new Board Object')
-    def post(self, request, pk):
+    @swagger_auto_schema(operation_summary='Creates a new Board Object')
+    def get(self, request, pk):
         board = Board.objects.get(pk=pk)
         self.check_object_permissions(request, board)
-        serializer = BoardFavouriteSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(board=board, user=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(seri1alizer.errors, status=status.HTTP_400_BAD_REQUEST)
+        BoardFavourite.objects.create(user=request.user, board=board)
+        return Response({'Details': 'Board was successfully added to Favourites'},
+                        status=status.HTTP_201_CREATED)
+
+
+class BoardsFavouriteView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    @swagger_auto_schema(operation_summary='Reads all User Favourite Boards')
+    def get(self, request):
+        self.check_permissions(request)
+        boards = [b.board for b in BoardFavourite.objects.filter(user=request.user)]
+        serializer = BoardDetailSerializer(boards, many=True)
+        return Response(serializer.data)
 
 
 class BarView(APIView):

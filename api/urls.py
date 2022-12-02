@@ -5,7 +5,7 @@ from .views import (BoardView, BoardDetailView,
                     CardLabelView, CardLabelDetailView,
                     CardFileView, CardFileDetailView,
                     CardCommentView,
-                    CardChecklistView, BoardsFavouriteView,
+                    CardChecklistView, BoardsFavouriteDetailView, BoardsFavouriteView,
                     ProjectView, ProjectDetailView, ProjectBoardView)
 
 urlpatterns = [
@@ -17,7 +17,8 @@ urlpatterns = [
 
     path('boards/', BoardView.as_view(), name='api-boards'),
     path('boards/<int:pk>/', BoardDetailView.as_view(), name='api-board-detail'),
-    path('boards/<int:pk>/favourite', BoardsFavouriteView.as_view(), name='api-board-favourite'),
+    path('boards/<int:pk>/favourite/', BoardsFavouriteDetailView.as_view(), name='api-board-favourite'),
+    path('boards/favourite/', BoardsFavouriteView.as_view(), name='api-boards-favourite'),
 
     path('bars/', BarView.as_view(), name='api-bars'),
     path('bars/<int:pk>', BarDetailView.as_view(), name='api-bar-detail'),
