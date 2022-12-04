@@ -14,8 +14,8 @@ class BarAdmin(admin.ModelAdmin):
 
 
 class CardAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'bar', 'description', 'deadline')
-    list_filter = ('bar',)
+    list_display = ('id', 'title', 'column', 'description', 'deadline')
+    list_filter = ('column',)
     search_fields = ('title',)
 
 
@@ -26,5 +26,6 @@ admin.site.register(BoardFavourite)
 admin.site.register(BoardLastSeen)
 admin.site.register(Card, CardAdmin)
 admin.site.register(CardFile)
+admin.site.register(CardMark)
 admin.site.register(CardComment)
 admin.site.register(Mark)

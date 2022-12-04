@@ -44,7 +44,7 @@ class BoardFavourite(models.Model):
 
 
 class Column(models.Model):
-    board = models.ForeignKey(to=Board, on_delete=models.CASCADE, related_name='bars')
+    board = models.ForeignKey(to=Board, on_delete=models.CASCADE, related_name='columns')
     title = models.CharField(max_length=30)
 
     def __str__(self):
@@ -52,11 +52,11 @@ class Column(models.Model):
 
 
 class Card(models.Model):
-    bar = models.ForeignKey(to=Column, on_delete=models.CASCADE, related_name='cards')
+    column = models.ForeignKey(to=Column, on_delete=models.CASCADE, related_name='cards')
     title = models.CharField(max_length=30)
     description = models.TextField(max_length=500)
     deadline = models.DateTimeField()
-    checklist = models.JSONField()
+    checklist = models.JSONField(blank=True, null=True)
 
     def __str__(self):
         return self.title
@@ -94,4 +94,4 @@ class CardMark(models.Model):
     card = models.ForeignKey(to=Card, on_delete=models.CASCADE, related_name='marks')
 
     def __str__(self):
-        return self.mark
+        return self.mark.title

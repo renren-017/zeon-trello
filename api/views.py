@@ -10,16 +10,16 @@ from drf_yasg.utils import swagger_auto_schema
 from .serializers import (BoardSerializer, BoardDetailSerializer, BoardFavouriteSerializer, BoardsLastSeenSerializer,
                           BarSerializer,
                           CardSerializer,
-                          CardLabelSerializer,
+                          BoardMarkSerializer, CardMarkSerializer,
                           CardFileSerializer,
                           CardCommentSerializer,
-                          CardChecklistItemSerializer,
-                          ProjectSerializer, BoardUpdateSerializer, BoardMemberSerializer, )
+                          ProjectSerializer, BoardUpdateSerializer, BoardMemberSerializer, CardUpdateSerializer,
+                          BoardMarkUpdateSerializer, CardCommentUpdateSerializer, )
 from .permissions import IsProjectOwnerOrReadOnly, IsBoardOwnerOrMember, IsBoardMember
 from boards.models import (Board, Column,
                            Card, Mark, CardFile, CardComment,
                            Project,
-                           BoardMember, BoardLastSeen, BoardFavourite)
+                           BoardMember, BoardLastSeen, BoardFavourite, CardMark)
 
 
 class ProjectView(APIView):
@@ -230,8 +230,8 @@ class BarView(APIView):
     # def get(self, request, pk):
     #     board = Board.objects.get(pk=pk)
     #     self.check_object_permissions(request, board)
-    #     bars = Column.objects.filter(board=board)
-    #     serializer = BarSerializer(bars, many=True)
+    #     columns = Column.objects.filter(board=board)
+    #     serializer = BarSerializer(columns, many=True)
     #     return Response(serializer.data)
 
     @swagger_auto_schema(request_body=BarSerializer, operation_summary='Creates a new Column Object')
@@ -250,19 +250,18 @@ class BarView(APIView):
 class BarDetailView(APIView):
     permission_classes = (IsBoardMember, )
 
-
     @swagger_auto_schema(operation_summary='Read a certain Column Object')
     def get(self, request, pk):
-        bar = Column.objects.get(pk=pk)
-        self.check_object_permissions(request, bar.board)
-        serializer = BarSerializer(bar)
+        column = Column.objects.get(pk=pk)
+        self.check_object_permissions(request, column.board)
+        serializer = BarSerializer(column)
         return Response(serializer.data)
 
     @swagger_auto_schema(request_body=BarSerializer, operation_summary='Updates a new Column Object')
     def put(self, request, pk):
-        bar = Column.objects.get(pk=pk)
-        self.check_object_permissions(request, bar.board)
-        serializer = BarSerializer(bar, data=request.data)
+        column = Column.objects.get(pk=pk)
+        self.check_object_permissions(request, column.board)
+        serializer = BarSerializer(column, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -270,39 +269,61 @@ class BarDetailView(APIView):
 
     @swagger_auto_schema(operation_summary='Delete a certain Column Object')
     def delete(self, request, pk):
-        bar = Column.objects.get(pk=pk)
-        self.check_object_permissions(request, bar.board)
-        bar.delete()
+        column = Column.objects.get(pk=pk)
+        self.check_object_permissions(request, column.board)
+        column.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CardView(APIView):
-    @swagger_auto_schema(operation_summary='Read all Card Objects')
-    def get(self, request):
-        cards = Card.objects.all()
-        serializer = CardSerializer(cards)
-        return Response(serializer.data)
+    permission_classes = (IsBoardMember, )
+
+    # @swagger_auto_schema(operation_summary='Read all Card Objects')
+    # def get(self, request, pk):
+    #     column = Column.objects.get(pk=pk)
+    #     self.check_object_permissions(request, column.board)
+    #     cards = Card.objects.filter(column=column)
+    #     serializer = CardSerializer(cards)
+    #     return Response(serializer.data)
 
     @swagger_auto_schema(request_body=CardSerializer, operation_summary='Creates a new Card Object')
-    def post(self, request):
+    def post(self, request, pk):
+        column = Column.objects.get(pk=pk)
+        self.check_object_permissions(request, column.board)
         serializer = CardSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(column=pk)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CardDetailView(APIView):
+    permission_classes = (IsBoardMember, )
+
     @swagger_auto_schema(operation_summary='Read a certain Card Object')
     def get(self, request, pk):
         card = Card.objects.get(pk=pk)
+        self.check_object_permissions(request, card.column.board)
+
         serializer = CardSerializer(card)
         return Response(serializer.data)
 
     @swagger_auto_schema(request_body=CardSerializer, operation_summary='Updates a new Card Object')
     def put(self, request, pk):
         card = Card.objects.get(pk=pk)
+        self.check_object_permissions(request, card.column.board)
+        serializer = CardSerializer(card, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(request_body=CardUpdateSerializer, operation_summary='Updates a new Card partially by pk')
+    def patch(self, request, pk):
+        card = Card.objects.get(pk=pk)
+        self.check_object_permissions(request, card.column.board)
+
         serializer = CardSerializer(card, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -312,110 +333,187 @@ class CardDetailView(APIView):
     @swagger_auto_schema(operation_summary='Delete a certain Card Object')
     def delete(self, request, pk):
         card = Card.objects.get(pk=pk)
+        self.check_object_permissions(request, card.column.board)
         card.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class CardLabelView(APIView):
+class BoardMarkView(APIView):
+    permission_classes = (IsBoardMember, )
 
     @swagger_auto_schema(operation_summary='Read all Card Label Objects')
     def get(self, request, pk):
-        labels = Mark.objects.all()
-        serializer = CardLabelSerializer(labels)
+        board = Board.objects.get(pk=pk)
+        self.check_object_permissions(request, board)
+
+        marks = Mark.objects.filter(board=board)
+        serializer = BoardMarkSerializer(marks, many=True)
         return Response(serializer.data)
 
-    @swagger_auto_schema(request_body=CardLabelSerializer, operation_summary='Creates a new Card Label Object')
-    def post(self, request):
-        serializer = CardLabelSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+    @swagger_auto_schema(request_body=BoardMarkSerializer, operation_summary='Creates a new Card Label Object')
+    def post(self, request, pk):
+        board = Board.objects.get(pk=pk)
+        self.check_object_permissions(request, board)
 
+        serializer = BoardMarkSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(board=pk)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class CardLabelDetailView(APIView):
+class BoardMarkDetailView(APIView):
+    permission_classes = (IsBoardMember, )
+
     @swagger_auto_schema(operation_summary='Read a certain Card Label Object')
     def get(self, request, pk):
-        card_label = Mark.objects.get(pk=pk)
-        serializer = CardLabelSerializer(card_label)
+        board_mark = Mark.objects.get(pk=pk)
+        self.check_object_permissions(request, board_mark.board)
+
+        serializer = BoardMarkSerializer(board_mark)
         return Response(serializer.data)
 
-    @swagger_auto_schema(request_body=CardLabelSerializer, operation_summary='Updates a new Card Label Object')
+    @swagger_auto_schema(request_body=BoardMarkSerializer, operation_summary='Updates a certain Mark by pk')
     def put(self, request, pk):
-        card_label = Mark.objects.get(pk=pk)
-        serializer = CardLabelSerializer(card_label, data=request.data)
+        board_mark = Mark.objects.get(pk=pk)
+        self.check_object_permissions(request, board_mark.board)
+
+        serializer = BoardMarkSerializer(board_mark, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @swagger_auto_schema(operation_summary='Delete a certain Card Label Object')
+    @swagger_auto_schema(request_body=BoardMarkUpdateSerializer, operation_summary='Partially updates a certain Mark by pk')
+    def patch(self, request, pk):
+        board_mark = Mark.objects.get(pk=pk)
+        self.check_object_permissions(request, board_mark.board)
+
+        serializer = BoardMarkSerializer(board_mark, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(operation_summary='Deletes a certain Board Mark by pk')
     def delete(self, request, pk):
-        card_label = Mark.objects.get(pk=pk)
-        card_label.delete()
+        board_mark = Mark.objects.get(pk=pk)
+        self.check_object_permissions(request, board_mark.board)
+
+        board_mark.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class CardMarkView(APIView):
+    permission_classes = (IsBoardMember, )
+
+    @swagger_auto_schema(request_body=CardMarkSerializer, operation_description='Adding Mark to a Card')
+    def post(self, request, pk):
+        card = Card.objects.get(pk=pk)
+        self.check_object_permissions(request, card.column.board)
+
+        serializer = CardMarkSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(card=pk)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CardMarkDetailView(APIView):
+    permission_classes = (IsBoardMember, )
+
+    def delete(self, request, pk):
+        card_mark = CardMark.objects.get(pk=pk)
+        self.check_object_permissions(request, card_mark.card.column.board)
+        card_mark.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CardFileView(APIView):
     parser_classes = (MultiPartParser, FormParser)
+    permission_classes = (IsBoardMember, )
 
-    @swagger_auto_schema(operation_summary='Read all Card Label Objects')
+    @swagger_auto_schema(operation_summary='Reads all Files uploaded to a certain Card')
     def get(self, request, pk):
-        files = CardFile.objects.all()
-        serializer = CardFileSerializer(files)
+        card = Card.objects.get(pk=pk)
+        self.check_object_permissions(request, card.column.board)
+
+        files = CardFile.objects.filter(card=card)
+        serializer = CardFileSerializer(files, many=True)
         return Response(serializer.data)
 
-    @swagger_auto_schema(request_body=CardFileSerializer, operation_summary='Creates a new Card File Object')
-    def post(self, request):
+    @swagger_auto_schema(request_body=CardFileSerializer, operation_summary='Uploads new File to a certain Card')
+    def post(self, request, pk):
+        card = Card.objects.get(pk=pk)
+        self.check_object_permissions(request, card.column.board)
+
         serializer = CardFileSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(card=pk)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CardFileDetailView(APIView):
-    @swagger_auto_schema(operation_summary='Read a certain Card File Object')
+    @swagger_auto_schema(operation_summary='Reads a certain Card File by pk')
     def get(self, request, pk):
         card_file = CardFile.objects.get(pk=pk)
+        self.check_object_permissions(request, card_file.card.column.board)
+
         serializer = CardFileSerializer(card_file)
         return Response(serializer.data)
 
-    @swagger_auto_schema(request_body=CardFileSerializer, operation_summary='Updates a new Card File Object')
-    def put(self, request, pk):
-        card_file = CardFile.objects.get(pk=pk)
-        serializer = CardFileSerializer(card_file, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    @swagger_auto_schema(operation_summary='Delete a certain Card Label Object')
+    @swagger_auto_schema(operation_summary='Deletes a certain Card File by pk')
     def delete(self, request, pk):
         card_file = CardFile.objects.get(pk=pk)
+        self.check_object_permissions(request, card_file.card.column.board)
+
         card_file.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CardCommentView(APIView):
+    permission_classes = (IsBoardMember, )
 
-    @swagger_auto_schema(operation_summary='Read all Card Comment Objects')
+    @swagger_auto_schema(operation_summary='Read all Card Comments')
     def get(self, request, pk):
-        comments = CardComment.objects.all()
+        card = Card.objects.get(pk=pk)
+        self.check_object_permissions(request, card.column.board)
+
+        comments = CardComment.objects.filter(card=card)
         serializer = CardCommentSerializer(comments)
         return Response(serializer.data)
 
-    @swagger_auto_schema(request_body=CardCommentSerializer, operation_summary='Creates a new Card Comment Object')
-    def post(self, request):
+    @swagger_auto_schema(request_body=CardCommentSerializer, operation_summary='Creates a new Comment to a certain Card')
+    def post(self, request, pk):
+        card = Card.objects.get(pk=pk)
+        self.check_object_permissions(request, card.column.board)
+
         serializer = CardCommentSerializer(data=request.data)
         if serializer.is_valid():
-            card_comment = serializer.save()
-            card_comment.user = self.request.user
-            card_comment.save()
+            serializer.save(user=request.user, card=pk)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class CardCommentDetailView(APIView):
+    permission_classes = (IsBoardMember, )
 
+    @swagger_auto_schema(request_body=CardCommentUpdateSerializer,
+                         operation_summary='Updates a new Comment to a certain Card')
+    def put(self, request, pk):
+        card_comment = CardComment.objects.get(pk=pk)
+        self.check_object_permissions(request, card_comment.card.column.board)
+
+        serializer = CardCommentSerializer(card_comment, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(operation_summary='Deletes a certain Card Comment by pk')
+    def delete(self, request, pk):
+        card_comment = CardComment.objects.get(pk=pk)
+        self.check_object_permissions(request, card_comment.card.column.board)
+
+        card_comment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

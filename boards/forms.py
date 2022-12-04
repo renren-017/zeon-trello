@@ -29,7 +29,7 @@ class CardCreateForm(forms.ModelForm):
 class CardUpdateForm(forms.ModelForm):
     class Meta:
         model = Card
-        fields = ('bar', 'title', 'description', 'deadline')
+        fields = ('column', 'title', 'description', 'deadline')
         widgets = {
             'deadline': DateTimeInput(attrs={"type": "datetime-local", })
         }

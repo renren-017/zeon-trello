@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 from rest_framework import serializers
 from boards.models import Project, Board, Column, Card, Mark, CardComment, CardFile, BoardMember, BoardFavourite, \
-    BoardLastSeen
+    BoardLastSeen, CardMark
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
@@ -73,7 +73,7 @@ class BoardDetailSerializer(serializers.Serializer):
     def to_representation(self, instance):
         members = [member.user for member in BoardMember.objects.filter(board=instance)]
         representation = super().to_representation(instance)
-        representation['bars'] = BarSerializer(instance.bars.all(), many=True, context=self.context).data
+        representation['columns'] = BarSerializer(instance.columns.all(), many=True, context=self.context).data
         representation['members'] = UserSerializer(members, many=True, context=self.context).data
         return representation
 
@@ -110,13 +110,13 @@ class BarSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         board = Board.objects.get(pk=validated_data['board'])
-        bar = Column(
+        column = Column(
             board=board,
             title=validated_data['title']
         )
-        bar.save()
+        column.save()
 
-        return bar
+        return column
 
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
@@ -130,45 +130,105 @@ class BarSerializer(serializers.Serializer):
 
 
 class CardSerializer(serializers.Serializer):
-    bar = serializers.CharField()
+
+    id = serializers.PrimaryKeyRelatedField(read_only=True)
     title = serializers.CharField(max_length=30)
     description = serializers.CharField(max_length=500)
+    checklist = serializers.JSONField(default={'Make a to-do': False})
     deadline = serializers.DateTimeField()
 
     def create(self, validated_data):
-        bar = Column.objects.get(pk=validated_data['bar'])
+        column = Column.objects.get(pk=validated_data['column'])
         card = Card(
-            bar=bar,
+            column=column,
             title=validated_data['title'],
             description=validated_data['description'],
+            checklist=validated_data.get('checklist'),
             deadline=validated_data['deadline'],
         )
 
         card.save()
         return card
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        marks = [cardmark.mark for cardmark in instance.marks.all()]
+        representation['marks'] = BoardMarkSerializer(marks, many=True, context=self.context).data
+        representation['files'] = CardFileSerializer(instance.files.all(), many=True, context=self.context).data
+        representation['comments'] = CardCommentSerializer(instance.comments.all(), many=True, context=self.context).data
+        return representation
+
     def update(self, instance, validated_data):
-        pass
+        instance.title = validated_data.get('title', instance.title)
+        instance.description = validated_data.get('description', instance.description)
+        instance.checklist = validated_data.get('checklist', instance.checklist)
+        instance.deadline = validated_data.get('deadline', instance.deadline)
+        instance.save()
+        return instance
 
 
-class CardLabelSerializer(serializers.Serializer):
-    card = serializers.CharField()
+class CardUpdateSerializer(CardSerializer):
+    # Only for schema generation, not actually used.
+    # because DRF-YASG does not support partial.
+    def get_fields(self):
+        new_fields = OrderedDict()
+        for name, field in super().get_fields().items():
+            field.required = False
+            new_fields[name] = field
+        return new_fields
+
+
+class BoardMarkSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    board = serializers.PrimaryKeyRelatedField(read_only=True)
     title = serializers.CharField(max_length=30)
     color = serializers.CharField(default='#000', max_length=7)
 
     def create(self, validated_data):
-        card = Card.objects.get(pk=validated_data['card'])
-        card = Mark(
-            card=card,
+        board = Board.objects.get(pk=validated_data['board'])
+        mark = Mark(
+            board=board,
             title=validated_data['title'],
             color=validated_data['color']
+        )
+        mark.save()
+        return mark
+
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        instance.color = validated_data.get('color', instance.color)
+        instance.save()
+        return instance
+
+
+class BoardMarkUpdateSerializer(BoardMarkSerializer):
+    # Only for schema generation, not actually used.
+    # because DRF-YASG does not support partial.
+    def get_fields(self):
+        new_fields = OrderedDict()
+        for name, field in super().get_fields().items():
+            field.required = False
+            new_fields[name] = field
+        return new_fields
+
+
+class CardMarkSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    mark = serializers.PrimaryKeyRelatedField(queryset=Mark.objects.all())
+
+    def create(self, validated_data):
+        card = Card.objects.get(pk=validated_data['card'])
+        mark = validated_data['mark']
+        card = CardMark(
+            card=card,
+            mark=mark
         )
         card.save()
         return card
 
 
 class CardFileSerializer(serializers.Serializer):
-    card = serializers.CharField()
+    id = serializers.IntegerField(read_only=True)
     file = serializers.FileField()
 
     def create(self, validated_data):
@@ -182,8 +242,8 @@ class CardFileSerializer(serializers.Serializer):
 
 
 class CardCommentSerializer(serializers.Serializer):
-    card = serializers.CharField()
-    user = serializers.StringRelatedField(read_only=True)
+    card = serializers.PrimaryKeyRelatedField(read_only=True)
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
     body = serializers.CharField(max_length=300)
     created_on = serializers.DateTimeField(default=timezone.now)
 
@@ -191,27 +251,27 @@ class CardCommentSerializer(serializers.Serializer):
         card = Card.objects.get(pk=validated_data['card'])
         card_comment = CardComment(
             card=card,
+            user=validated_data['user'],
             body=validated_data['body'],
             created_on=validated_data['created_on']
         )
         card_comment.save()
-        return card_comment.save()
+        return card_comment
 
+    def update(self, instance, validated_data):
+        instance.body = validated_data.get('body', instance.body)
+        instance.save()
+        return instance
 
-class CardChecklistItemSerializer(serializers.Serializer):
-    card = serializers.CharField()
-    content = serializers.CharField(max_length=300)
-    is_done = serializers.BooleanField(default=False)
-
-    def create(self, validated_data):
-        card = Card.objects.get(pk=validated_data['card'])
-        card_checklist_item = CardComment(
-            card=card,
-            body=validated_data['content'],
-            is_done=validated_data['is_done'],
-        )
-        card_checklist_item.save()
-        return card_checklist_item.save()
+class CardCommentUpdateSerializer(CardCommentSerializer):
+    # Only for schema generation, not actually used.
+    # because DRF-YASG does not support partial.
+    def get_fields(self):
+        new_fields = OrderedDict()
+        for name, field in super().get_fields().items():
+            field.required = False
+            new_fields[name] = field
+        return new_fields
 
 
 class ProjectSerializer(serializers.Serializer):

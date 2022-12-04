@@ -2,11 +2,12 @@ from django.urls import path, re_path, include
 from .views import (BoardView, BoardDetailView,
                     BarView, BarDetailView,
                     CardView, CardDetailView,
-                    CardLabelView, CardLabelDetailView,
+                    CardMarkView, CardMarkDetailView,
+                    BoardMarkView, BoardMarkDetailView,
                     CardFileView, CardFileDetailView,
                     CardCommentView,
                     BoardsFavouriteDetailView, BoardsFavouriteView, BoardsLastSeenView,
-                    ProjectView, ProjectDetailView, ProjectBoardView, BoardMemberAddView)
+                    ProjectView, ProjectDetailView, ProjectBoardView, BoardMemberAddView, CardCommentDetailView)
 
 
 urlpatterns = [
@@ -25,17 +26,18 @@ urlpatterns = [
 
     path('bars/board/<int:pk>', BarView.as_view(), name='api-bars'),
     path('bars/<int:pk>', BarDetailView.as_view(), name='api-bar-detail'),
-    #
-    # path('cards/', CardView.as_view(), name='api-cards'),
-    # path('cards/<int:pk>', CardDetailView.as_view(), name='api-card-detail'),
-    #
-    # path('card_labels/', CardLabelView.as_view(), name='api-card-labels'),
-    # path('card_labels/<int:pk>', CardLabelDetailView.as_view(), name='api-card-label-detail'),
-    #
-    # path('card_files/', CardFileView.as_view(), name='api-card-files'),
-    # path('card_files/<int:pk>', CardFileDetailView.as_view(), name='api-card-file-detail'),
-    #
-    # path('card_comments/', CardCommentView.as_view(), name='api-card-comments'),
-    #
-    # path('card_checklists/>', CardChecklistView.as_view(), name='api-card-checklists'),
+
+    path('cards/bar/<int:pk>/', CardView.as_view(), name='api-cards'),
+    path('cards/<int:pk>', CardDetailView.as_view(), name='api-card-detail'),
+
+    path('mark/board/<int:pk>/', BoardMarkView.as_view(), name='api-board-mark'),
+    path('mark/<int:pk>/', BoardMarkDetailView.as_view(), name='api-board-mark-detail'),
+    path('mark/card/<int:pk>/', CardMarkView.as_view(), name='api-card-mark'),
+    path('card_mark/<int:pk>/', CardMarkDetailView.as_view(), name='api-card-mark-detail'),
+
+    path('files/card/<int:pk>/', CardFileView.as_view(), name='api-card-files'),
+    path('files/<int:pk>/', CardFileDetailView.as_view(), name='api-card-file-detail'),
+
+    path('comments/card/<int:pk>/', CardCommentView.as_view(), name='api-card-comments'),
+    path('comments/<int:pk>/', CardCommentDetailView.as_view(), name='api-card-comment-detail')
 ]
