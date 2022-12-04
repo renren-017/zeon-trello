@@ -15,7 +15,7 @@ class Board(models.Model):
     project = models.ForeignKey(to=Project, on_delete=models.CASCADE, related_name='boards')
     title = models.CharField(max_length=50)
     background_img = models.ImageField(upload_to='back_img/')
-    is_archived = models.BooleanField(default=True)
+    is_archived = models.BooleanField(default=False)
 
     created_on = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
@@ -26,10 +26,10 @@ class Board(models.Model):
 
 class BoardMember(models.Model):
     board = models.ForeignKey(to=Board, on_delete=models.CASCADE, related_name='members')
-    member = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name='boards')
 
     def __str__(self):
-        return f'{self.board.id}:{self.member.id}'
+        return f'{self.board.id}:{self.user.id}'
 
 
 class BoardLastSeen(models.Model):

@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_filters',
 
     'rest_framework',
     'rest_framework.authtoken',
@@ -115,13 +116,9 @@ SOCIALACCOUNT_PROVIDERS = {
 
 # REST API
 
-# REST_FRAMEWORK = {
-#     'DEFAULT_PARSER_CLASSES': [
-#         'rest_framework.parsers.FormParser',
-#         'rest_framework.parsers.MultiPartParser',
-#         'rest_framework.parsers.JSONParser',
-#     ]
-# }
+REST_FRAMEWORK = {
+'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
+}
 
 
 MIDDLEWARE = [

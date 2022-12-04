@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from rest_framework import serializers
 from boards.models import Project, Board, Column, Card, Mark, CardComment, CardFile, BoardMember, BoardFavourite, \
     BoardLastSeen
@@ -18,6 +20,7 @@ class BoardSerializer(serializers.Serializer):
     project = serializers.PrimaryKeyRelatedField(read_only=True)
     title = serializers.CharField(max_length=50)
     background_img = serializers.ImageField()
+    is_archived = serializers.BooleanField(read_only=True)
 
     created_on = serializers.DateTimeField(read_only=True)
     last_modified = serializers.DateTimeField(read_only=True)
@@ -36,6 +39,17 @@ class BoardSerializer(serializers.Serializer):
         instance.background_img = validated_data.get('background_img', instance.background_img)
         instance.save()
         return instance
+
+
+class BoardUpdateSerializer(BoardSerializer):
+    # Only for schema generation, not actually used.
+    # because DRF-YASG does not support partial.
+    def get_fields(self):
+        new_fields = OrderedDict()
+        for name, field in super().get_fields().items():
+            field.required = False
+            new_fields[name] = field
+        return new_fields
 
 
 class BoardDetailSerializer(serializers.Serializer):
@@ -57,7 +71,7 @@ class BoardDetailSerializer(serializers.Serializer):
         return instance
 
     def to_representation(self, instance):
-        members = [member.member for member in BoardMember.objects.filter(board=instance)]
+        members = [member.user for member in BoardMember.objects.filter(board=instance)]
         representation = super().to_representation(instance)
         representation['bars'] = BarSerializer(instance.bars.all(), many=True, context=self.context).data
         representation['members'] = UserSerializer(members, many=True, context=self.context).data
@@ -75,9 +89,23 @@ class BoardFavouriteSerializer(serializers.Serializer):
         pass
 
 
+class BoardMemberSerializer(serializers.Serializer):
+    board = serializers.PrimaryKeyRelatedField(read_only=True)
+    user = serializers.EmailField()
+
+    def create(self, validated_data):
+        board_member = BoardMember(
+            board=Board.objects.get(pk=validated_data['board']),
+            user=User.objects.get(email=validated_data['user'])
+        )
+        board_member.save()
+
+        return board_member
+
+
 class BarSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
-    board = serializers.CharField()
+    board = serializers.PrimaryKeyRelatedField(read_only=True)
     title = serializers.CharField(max_length=30)
 
     def create(self, validated_data):
@@ -89,6 +117,11 @@ class BarSerializer(serializers.Serializer):
         bar.save()
 
         return bar
+
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        instance.save()
+        return instance
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -113,6 +146,9 @@ class CardSerializer(serializers.Serializer):
 
         card.save()
         return card
+
+    def update(self, instance, validated_data):
+        pass
 
 
 class CardLabelSerializer(serializers.Serializer):
@@ -177,6 +213,7 @@ class CardChecklistItemSerializer(serializers.Serializer):
         card_checklist_item.save()
         return card_checklist_item.save()
 
+
 class ProjectSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     title = serializers.CharField(max_length=50)
@@ -200,3 +237,19 @@ class ProjectSerializer(serializers.Serializer):
         representation = super().to_representation(instance)
         representation['boards'] = BoardSerializer(instance.boards.all(), many=True, context=self.context).data
         return representation
+
+
+class BoardsLastSeenSerializer(serializers.Serializer):
+    timestamp = serializers.DateTimeField(read_only=True)
+
+    def create(self, validated_data):
+        pass
+
+    def update(self, instance, validated_data):
+        pass
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['board'] = BoardSerializer(instance.board, context=self.context).data
+        return representation
+

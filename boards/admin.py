@@ -3,7 +3,7 @@ from .models import *
 
 
 class BoardAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'background_img', 'created_on', 'last_modified')
+    list_display = ('id', 'project','title', 'background_img', 'created_on', 'last_modified')
     search_fields = ('title',)
 
 
@@ -19,9 +19,10 @@ class CardAdmin(admin.ModelAdmin):
     search_fields = ('title',)
 
 
-# admin.site.register(Board, BoardAdmin)
+admin.site.register(Board, BoardAdmin)
 admin.site.register(Column, BarAdmin)
 admin.site.register(BoardMember)
+admin.site.register(BoardFavourite)
 admin.site.register(BoardLastSeen)
 admin.site.register(Card, CardAdmin)
 admin.site.register(CardFile)

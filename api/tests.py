@@ -1,22 +1,25 @@
 from django.test import TestCase
+from django.utils import timezone
 from rest_framework import status
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 
-import tempfile
-from PIL import Image
+# import tempfile
+# from PIL import Image
+from django.core.files.uploadedfile import SimpleUploadedFile
 
-from boards.models import Project, Board
+from boards.models import Project, Board, BoardMember, BoardLastSeen
 
 User = get_user_model()
 
 
-def temporary_image():
-    image = Image.new("RGB", (100, 100))
-    tmp_file = tempfile.NamedTemporaryFile(suffix='.jpg')
-    image.save(tmp_file, 'jpeg')
-    tmp_file.seek(0)
-    return tmp_file
+def get_user(pk):
+    return User.objects.get(pk=pk)
+
+
+def get_image():
+    return SimpleUploadedFile(name='test_image.jpg', content=open('media/back_img/pexels-cottonbro-4069291_aqjm4TM.jpg', 'rb').read(),
+                              content_type='image/jpeg')
 
 
 class ProjectTest(TestCase):
@@ -26,11 +29,8 @@ class ProjectTest(TestCase):
         self.user2 = User(email='n2@user.com', password='foo', first_name='N2', last_name='U2').save()
         Project(title='Example', owner=User.objects.get(pk=1)).save()
 
-    def get_user(self, pk):
-        return User.objects.get(pk=pk)
-
     def test_get_projects(self):
-        user = self.get_user(1)
+        user = get_user(1)
         self.client.force_login(user)
 
         response = self.client.get(reverse('api-projects'), format='json')
@@ -38,7 +38,7 @@ class ProjectTest(TestCase):
         self.assertEqual(len(response.data), 1)
 
     def test_get_project_by_pk(self):
-        user = self.get_user(1)
+        user = get_user(1)
         self.client.force_login(user)
 
         response = self.client.get(reverse('api-project-detail', kwargs={'pk': 1}), format='json')
@@ -49,7 +49,7 @@ class ProjectTest(TestCase):
         data = {
             'title': 'Example 2'
         }
-        user = self.get_user(1)
+        user = get_user(1)
         self.client.force_login(user)
         response = self.client.post(reverse('api-projects'), data, format='json')
 
@@ -58,7 +58,7 @@ class ProjectTest(TestCase):
         self.assertEqual(Project.objects.count(), 2)
 
     def test_project_put(self):
-        user = self.get_user(1)
+        user = get_user(1)
         data = {
             'title': 'Example Updated'
         }
@@ -82,7 +82,7 @@ class ProjectTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_get_update_project_without_ownership(self):
-        user = self.get_user(2)
+        user = get_user(2)
         self.client.force_login(user)
         response_get = self.client.get(reverse('api-project-detail', kwargs={'pk': 1}), format='json')
         self.assertEqual(response_get.status_code, status.HTTP_403_FORBIDDEN)
@@ -94,38 +94,85 @@ class ProjectTest(TestCase):
                                        content_type='application/json')
         self.assertEqual(response_put.status_code, status.HTTP_403_FORBIDDEN)
 
+    def test_project_delete(self):
+        user = get_user(1)
+        self.client.force_login(user)
+        response = self.client.delete(reverse('api-project-detail', kwargs={'pk': 1}), format='json')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Project.objects.count(), 0)
+
 
 class BoardTest(TestCase):
+
+    # def temporary_image(self):
+    #     image = Image.new("RGB", (100, 100))
+    #     tmp_file = tempfile.NamedTemporaryFile(suffix='.jpg')
+    #     image.save(tmp_file, 'jpeg')
+    #     tmp_file.seek(0)
+    #     return tmp_file
 
     def setUp(self):
         self.user1 = User(email='n@user.com', password='foo', first_name='N', last_name='U').save()
         self.user2 = User(email='n2@user.com', password='foo', first_name='N2', last_name='U2').save()
-        Project(title='Example', owner=User.objects.get(pk=1)).save()
-
-    def get_user(self, pk):
-        return User.objects.get(pk=pk)
+        Project(title='Example', owner=get_user(1)).save()
+        Board(title='Example', project=Project.objects.get(pk=1), background_img=get_image()).save()
+        BoardMember(user=get_user(1), board=Board.objects.get(pk=1)).save()
 
     def test_get_boards(self):
-        user = self.get_user(1)
+        user = get_user(1)
         self.client.force_login(user)
 
         response = self.client.get(reverse('api-boards'), format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 0)
+        self.assertEqual(len(response.data), 1)
 
-    # def test_board_create(self):
-    #     user = self.get_user(1)
-    #     self.client.force_login(user)
-    #
-    #     data = {
-    #         'title': 'Example Board',
-    #         'project': 1,
-    #         'background_img': temporary_image(),
-    #     }
-    #     response = self.client.post(reverse('api-boards'), data, format='formdata')
-    #
-    #     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-    #     self.assertEqual(len(response.data), 1)
+    def test_board_create(self):
+        user = get_user(1)
+        self.client.force_login(user)
+
+        data = {
+            'title': 'Example Board',
+            'project': 1,
+            'background_img': get_image(),
+        }
+        response = self.client.post(reverse('api-project-boards', kwargs={'pk': 1}), data, format='formdata')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(BoardMember.objects.get(board=Board.objects.get(pk=2)).user, get_user(1))
+        self.assertEqual(Board.objects.count(), 2)
+        self.assertEqual(BoardLastSeen.objects.count(), 1)
+
+    def test_board_get_by_pk(self):
+        user = get_user(1)
+        user2 = get_user(2)
+
+        self.client.force_login(user)
+        response = self.client.get(reverse('api-board-detail', kwargs={'pk': 1}), format='json')
+
+        self.client.force_login(user2)
+        response2 = self.client.get(reverse('api-board-detail', kwargs={'pk': 1}), format='json')
+
+        self.assertEqual(response2.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_board_make_and_get_favourite(self):
+        self.client.force_login(get_user(1))
+
+        response_make = self.client.get(reverse('api-board-favourite', kwargs={'pk': 1}))
+        self.assertEqual(response_make.status_code, status.HTTP_201_CREATED)
+
+        response_get = self.client.get(reverse('api-boards-favourite'), format='json')
+        self.assertEqual(response_get.status_code, status.HTTP_200_OK)
+
+    def test_board_get_recent(self):
+        self.client.force_login(get_user(1))
+
+        response_get = self.client.get(reverse('api-board-detail', kwargs={'pk': 1}), format='json')
+        self.assertEqual(response_get.status_code, status.HTTP_200_OK)
+        response_recent = self.client.get(reverse('api-boards-recent'), format='json')
+        self.assertEqual(response_recent.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response_recent.data), 1)
+
 
 #
 # class BarTest(TestCase):
