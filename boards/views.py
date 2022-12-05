@@ -60,8 +60,10 @@ class BoardCreateView(CreateView):
     fields = ["title", "background_img"]
     success_url = reverse_lazy('home')
 
+
     def form_valid(self, form):
         form.instance.project = Project.objects.get(pk=self.kwargs['pk'])
+        form.instance.save()
         return super().form_valid(form)
 
 
@@ -109,6 +111,7 @@ class CardCreateView(CreateView):
 
     def form_valid(self, form):
         form.instance.column = Column.objects.get(id=self.kwargs['pk'])
+        form.instance.save()
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
