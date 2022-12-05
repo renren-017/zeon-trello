@@ -1,5 +1,8 @@
 from collections import OrderedDict
+from io import BytesIO
 
+from PIL import Image
+from django.core.files import File
 from rest_framework import serializers
 from boards.models import Project, Board, Column, Card, Mark, CardComment, CardFile, BoardMember, BoardFavourite, \
     BoardLastSeen, CardMark
@@ -26,10 +29,19 @@ class BoardSerializer(serializers.Serializer):
     last_modified = serializers.DateTimeField(read_only=True)
 
     def create(self, validated_data):
+        background_img = validated_data['background_img']
+        img = Image.open(background_img)
+        img_output = BytesIO()
+        img.save(img_output,
+                 "JPEG",
+                 optimize=True,
+                 quality=30)
+        background_img = File(img_output, name=background_img.name)
         project = Project.objects.get(pk=validated_data['project'])
+
         board = Board(title=validated_data['title'],
                       project=project,
-                      background_img=validated_data['background_img'])
+                      background_img=background_img)
         board.save()
 
         return board

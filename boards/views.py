@@ -1,11 +1,13 @@
-from django.http import HttpResponse
-from django.shortcuts import render
+from io import BytesIO
+
+from django.core.files import File
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, RedirectView
 from django.views.generic.edit import FormMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy, reverse
 from django.shortcuts import redirect, get_object_or_404
 from django.db.models import Q
+from PIL import Image
 
 from .models import *
 from .forms import BarForm, CommentForm, CardCreateForm, CardUpdateForm
@@ -63,6 +65,13 @@ class BoardCreateView(CreateView):
 
     def form_valid(self, form):
         form.instance.project = Project.objects.get(pk=self.kwargs['pk'])
+        img = Image.open(form.instance.background_img)
+        img_output = BytesIO()
+        img.save(img_output,
+                 "JPEG",
+                 optimize=True,
+                 quality=30)
+        form.instance.background_img = File(img_output, name=form.instance.background_img.name)
         form.instance.save()
         BoardMember(board=form.instance, user=self.request.user).save()
         return super().form_valid(form)
@@ -70,7 +79,7 @@ class BoardCreateView(CreateView):
 
 class BoardUpdateView(UpdateView):
     model = Board
-    fields = ["title", "background_img", "is_starred", "is_archived"]
+    fields = ["title", "background_img", "is_archived"]
 
     def get_success_url(self):
         return reverse("board-detail", kwargs={'pk': self.kwargs['pk']})
