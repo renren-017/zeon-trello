@@ -1,5 +1,6 @@
+from django.http import HttpResponse
 from django.shortcuts import render
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, RedirectView
 from django.views.generic.edit import FormMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy, reverse
@@ -22,7 +23,7 @@ class ProjectListView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         recent_boards = [b.board for b in BoardLastSeen.objects.filter(user=self.request.user).order_by('-timestamp')]
         fav_boards = [b.board for b in BoardFavourite.objects.filter(user=self.request.user)]
-        archived_boards = [b.board for b in BoardMember.objects.filter(user=self.request.user) if b.board.is_archived==True]
+        archived_boards = [b.board for b in BoardMember.objects.filter(user=self.request.user, board__is_archived=True)]
         context['recent_boards'] = recent_boards
         context['favourite_boards'] = fav_boards
         context['archived_boards'] = archived_boards
@@ -60,10 +61,10 @@ class BoardCreateView(CreateView):
     fields = ["title", "background_img"]
     success_url = reverse_lazy('home')
 
-
     def form_valid(self, form):
         form.instance.project = Project.objects.get(pk=self.kwargs['pk'])
         form.instance.save()
+        BoardMember(board=form.instance, user=self.request.user).save()
         return super().form_valid(form)
 
 
@@ -92,7 +93,16 @@ class BoardDetailView(DetailView, LoginRequiredMixin, FormMixin):
         context = super().get_context_data(**kwargs)
         context['bars'] = Column.objects.filter(board=self.object)
         context['form'] = BarForm(initial={'board_id': self.object.id})
+        context['is_favourite'] = BoardFavourite.objects.filter(board=self.get_object(), user=self.request.user).exists()
         return context
+
+    def get(self, request, pk):
+        self.object = self.get_object()
+        context = self.get_context_data(object=self.object)
+
+        last_seen, created = BoardLastSeen.objects.get_or_create(board=self.object, user=self.request.user)
+        last_seen.save()
+        return self.render_to_response(context)
 
     def post(self, request, pk):
         board = get_object_or_404(Board, pk=pk)
@@ -103,6 +113,48 @@ class BoardDetailView(DetailView, LoginRequiredMixin, FormMixin):
             obj.board = board
             obj.save()
             return redirect('board-detail', board.pk)
+
+
+class BoardFavRedirectView(RedirectView):
+
+    pattern_name = 'board-detail'
+
+    def get_redirect_url(self, *args, **kwargs):
+        board = Board.objects.get(pk=self.kwargs['pk'])
+        BoardFavourite(board=board, user=self.request.user).save()
+        return super().get_redirect_url(*args, **kwargs)
+
+
+class BoardFavRemoveRedirectView(RedirectView):
+
+    pattern_name = 'board-detail'
+
+    def get_redirect_url(self, *args, **kwargs):
+        board = Board.objects.get(pk=self.kwargs['pk'])
+        BoardFavourite.objects.get(board=board, user=self.request.user).delete()
+        return super().get_redirect_url(*args, **kwargs)
+
+
+class BoardArchiveRedirectView(RedirectView):
+
+    pattern_name = 'board-detail'
+
+    def get_redirect_url(self, *args, **kwargs):
+        board = Board.objects.get(pk=self.kwargs['pk'])
+        board.is_archived = True
+        board.save()
+        return super().get_redirect_url(*args, **kwargs)
+
+
+class BoardArchiveRemoveRedirectView(RedirectView):
+
+    pattern_name = 'board-detail'
+
+    def get_redirect_url(self, *args, **kwargs):
+        board = Board.objects.get(pk=self.kwargs['pk'])
+        board.is_archived = False
+        board.save()
+        return super().get_redirect_url(*args, **kwargs)
 
 
 class CardCreateView(CreateView):

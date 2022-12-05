@@ -2,7 +2,8 @@ from django.urls import path
 
 from .views import ProjectDetailView, BoardDetailView, BoardCreateView, BoardUpdateView, BoardDeleteView,\
     CardCreateView, CardUpdateView, CardDetailView, CardDeleteView, SearchResultsView, ProjectListView, \
-    ProjectCreateView
+    ProjectCreateView, BoardFavRedirectView, BoardFavRemoveRedirectView, BoardArchiveRedirectView, \
+    BoardArchiveRemoveRedirectView
 from .asset_views import CardMarkCreateView, CardFileCreateView, CardCommentCreateView
 
 urlpatterns = [
@@ -12,6 +13,10 @@ urlpatterns = [
     path("project/<int:pk>/", ProjectDetailView.as_view(), name='project-detail'),
 
     path("board/<int:pk>/", BoardDetailView.as_view(), name="board-detail"),
+    path("board/<int:pk>/favourite", BoardFavRedirectView.as_view(), name="board-fav"),
+    path("board/<int:pk>/favourite/remove", BoardFavRemoveRedirectView.as_view(), name="board-fav-remove"),
+    path("board/<int:pk>/archive", BoardArchiveRedirectView.as_view(), name="board-archive"),
+    path("board/<int:pk>/archive/remove", BoardArchiveRemoveRedirectView.as_view(), name="board-archive-remove"),
     path("project/<int:pk>/board/add/", BoardCreateView.as_view(), name="board-add"),
     path("board/<int:pk>/update/", BoardUpdateView.as_view(), name="board-update"),
     path("board/<int:pk>/delete/", BoardDeleteView.as_view(), name="board-delete"),

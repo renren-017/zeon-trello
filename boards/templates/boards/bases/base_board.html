@@ -21,7 +21,41 @@
                         id="board-update"
                         type="button"
                         onclick="location.href='{% url "board-update" board.id %}'"/>
+                {% if not is_favourite %}
+                <label for="board-fav">
+                    <p class="mr-5 font-normal leading-6 text-xs rounded bg-gray-600 px-4 py-0.5 navbar-button">
+                        Add to Favourites </p></label>
+                <input
+                        id="board-fav"
+                        type="button"
+                        onclick="location.href='{% url "board-fav" board.id %}'"/>
+                {% else %}
+                <label for="board-fav-remove">
+                    <p class="mr-5 font-normal leading-6 text-xs rounded bg-gray-600 px-4 py-0.5 navbar-button">
+                        Remove From Favourites </p></label>
+                <input
+                        id="board-fav-remove"
+                        type="button"
+                        onclick="location.href='{% url "board-fav-remove" board.id %}'"/>
+                {% endif %}
 
+                {% if not board.is_archived %}
+                <label for="board-archive">
+                    <p class="mr-5 font-normal leading-6 text-xs rounded bg-gray-600 px-4 py-0.5 navbar-button">
+                        Archive </p></label>
+                <input
+                        id="board-archive"
+                        type="button"
+                        onclick="location.href='{% url "board-archive" board.id %}'"/>
+                {% else %}
+                <label for="board-archive-remove">
+                    <p class="mr-5 font-normal leading-6 text-xs rounded bg-gray-600 px-4 py-0.5 navbar-button">
+                        Remove From Archived </p></label>
+                <input
+                        id="board-archive-remove"
+                        type="button"
+                        onclick="location.href='{% url "board-archive-remove" board.id %}'"/>
+                {% endif %}
                 <label for="board-delete">
                     <p class="mr-5 font-normal leading-6 text-xs rounded bg-gray-600 px-4 py-0.5 navbar-button">
                         Delete</p></label>
