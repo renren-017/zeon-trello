@@ -95,6 +95,20 @@ EMAIL_USE_TLS = True
 
 FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
+
+# Swagger
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Token': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization',
+        }
+    },
+}
+
+
 # Provider specific settings
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
@@ -198,7 +212,6 @@ AUTHENTICATION_BACKENDS = [
     # Needed to login by username in Django admin, regardless of `allauth`
     'django.contrib.auth.backends.ModelBackend',
 
-    # `allauth` specific authentication methods, such as login by e-mail
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 

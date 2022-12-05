@@ -439,6 +439,7 @@ class CardFileView(APIView):
 
 
 class CardFileDetailView(APIView):
+    permission_classes = (IsBoardMember,)
     @swagger_auto_schema(operation_summary='Reads a certain Card File by pk')
     def get(self, request, pk):
         card_file = CardFile.objects.get(pk=pk)

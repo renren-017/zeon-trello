@@ -105,7 +105,6 @@ class BoardMemberSerializer(serializers.Serializer):
 
 class BarSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
-    board = serializers.PrimaryKeyRelatedField(read_only=True)
     title = serializers.CharField(max_length=30)
 
     def create(self, validated_data):
