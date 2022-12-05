@@ -6,7 +6,7 @@ from .views import (BoardView, BoardDetailView,
                     BoardMarkView, BoardMarkDetailView,
                     CardFileView, CardFileDetailView,
                     CardCommentView,
-                    BoardsFavouriteDetailView, BoardsFavouriteView, BoardsLastSeenView,
+                    BoardsFavouriteView, BoardsFavouriteView, BoardsLastSeenView,
                     ProjectView, ProjectDetailView, ProjectBoardView, BoardMemberAddView, CardCommentDetailView)
 
 
@@ -23,13 +23,13 @@ urlpatterns = [
     path('boards/recent/', BoardsLastSeenView.as_view(), name='api-boards-recent'),
     path('boards/<int:pk>/', BoardDetailView.as_view(), name='api-board-detail'),
     path('boards/<int:pk>/invite/', BoardMemberAddView.as_view(), name='api-board-add-member'),
-    path('boards/<int:pk>/favourite/', BoardsFavouriteDetailView.as_view(), name='api-board-favourite'),
+    path('boards/favourite/', BoardsFavouriteView.as_view(), name='api-board-favourite'),
 
-    path('columns/board/<int:pk>', ColumnView.as_view(), name='api-columns'),
-    path('columns/<int:pk>', ColumnDetailView.as_view(), name='api-column-detail'),
+    path('columns/board/<int:pk>/', ColumnView.as_view(), name='api-columns'),
+    path('columns/<int:pk>/', ColumnDetailView.as_view(), name='api-column-detail'),
 
     path('cards/column/<int:pk>/', CardView.as_view(), name='api-cards'),
-    path('cards/<int:pk>', CardDetailView.as_view(), name='api-card-detail'),
+    path('cards/<int:pk>/', CardDetailView.as_view(), name='api-card-detail'),
 
     path('mark/board/<int:pk>/', BoardMarkView.as_view(), name='api-board-mark'),
     path('mark/<int:pk>/', BoardMarkDetailView.as_view(), name='api-board-mark-detail'),

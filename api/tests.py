@@ -3,9 +3,8 @@ from django.utils import timezone
 from rest_framework import status
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+import time
 
-# import tempfile
-# from PIL import Image
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from boards.models import Project, Board, BoardMember, BoardLastSeen, Column, Card
@@ -18,7 +17,8 @@ def get_user(pk):
 
 
 def get_image():
-    return SimpleUploadedFile(name='test_image.jpg', content=open('media/back_img/pexels-cottonbro-4069291_aqjm4TM.jpg', 'rb').read(),
+    return SimpleUploadedFile(name='test_image.jpg',
+                              content=open('media/back_img/pexels-peng-liu-169647.jpg', 'rb').read(),
                               content_type='image/jpeg')
 
 
@@ -33,9 +33,14 @@ class ProjectTest(TestCase):
         user = get_user(1)
         self.client.force_login(user)
 
+        start = time.time()
         response = self.client.get(reverse('api-projects'), format='json')
+        end = time.time()
+        response_time = end-start
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
+        self.assertLess(response_time, 0.1)
 
     def test_get_project_by_pk(self):
         user = get_user(1)
@@ -70,7 +75,6 @@ class ProjectTest(TestCase):
 
         self.assertEqual(after.status_code, status.HTTP_201_CREATED)
         self.assertEqual(after.data['title'], 'Example Updated')
-        self.assertNotEqual(after.data['title'], before.data['title'])
         self.assertEqual(after.data['owner'], before.data['owner'])
 
     def test_get_projects_with_failed_authentication(self):

@@ -13,8 +13,8 @@ from .serializers import (BoardSerializer, BoardDetailSerializer, BoardFavourite
                           BoardMarkSerializer, CardMarkSerializer,
                           CardFileSerializer,
                           CardCommentSerializer,
-                          ProjectSerializer, BoardUpdateSerializer, BoardMemberSerializer, CardUpdateSerializer,
-                          BoardMarkUpdateSerializer, CardCommentUpdateSerializer, )
+                          ProjectSerializer, BoardPatchSerializer, BoardMemberSerializer, CardUpdateSerializer,
+                          BoardMarkUpdateSerializer, CardCommentUpdateSerializer, BoardUpdateSerializer, )
 from .permissions import IsProjectOwnerOrReadOnly, IsBoardOwnerOrMember, IsBoardMember
 from boards.models import (Board, Column,
                            Card, Mark, CardFile, CardComment,
@@ -143,25 +143,23 @@ class BoardDetailView(APIView):
         recent.save()
         return Response(serializer.data)
 
-    @swagger_auto_schema(request_body=BoardSerializer, operation_summary='Updates a Board by pk')
+    @swagger_auto_schema(request_body=BoardUpdateSerializer, operation_summary='Updates a Board by pk')
     def put(self, request, pk):
         board = Board.objects.get(pk=pk)
         self.check_object_permissions(request, board)
         serializer = BoardDetailSerializer(board, data=request.data)
         if serializer.is_valid():
-            instance = serializer.save()
-            BoardLastSeen(user=request.user, board=instance).save()
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @swagger_auto_schema(request_body=BoardUpdateSerializer, operation_summary='Partially updates a Board by pk')
+    @swagger_auto_schema(request_body=BoardPatchSerializer, operation_summary='Partially updates a Board by pk')
     def patch(self, request, pk):
         board = Board.objects.get(pk=pk)
         self.check_object_permissions(request, board)
         serializer = BoardSerializer(board, data=request.data, partial=True)
         if serializer.is_valid():
-            instance = serializer.save()
-            BoardLastSeen(user=request.user, board=instance).save()
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -174,7 +172,7 @@ class BoardDetailView(APIView):
 
 
 class BoardsFavouriteView(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsBoardMember,)
 
     @swagger_auto_schema(operation_summary='Reads current user\'s Favourite Boards')
     def get(self, request):
@@ -183,17 +181,28 @@ class BoardsFavouriteView(APIView):
         serializer = BoardSerializer(boards, many=True)
         return Response(serializer.data)
 
+    @swagger_auto_schema(request_body=BoardFavouriteSerializer,
+                         operation_summary='Makes a certain Board user\'s Favourite')
+    def post(self, request):
+        self.check_permissions(request)
 
-class BoardsFavouriteDetailView(APIView):
-    permission_classes = (IsBoardMember,)
+        serializer = BoardFavouriteSerializer(data=request.data, many=True)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
 
-    @swagger_auto_schema(operation_summary='Makes a certain Board user\'s Favourite')
-    def get(self, request, pk):
-        board = Board.objects.get(pk=pk)
-        self.check_object_permissions(request, board)
-        BoardFavourite.objects.create(user=request.user, board=board)
         return Response({'Details': 'Board was successfully added to Favourites'},
                         status=status.HTTP_201_CREATED)
+
+    @swagger_auto_schema(request_body=BoardFavouriteSerializer,
+                         operation_summary='Removes boards from Favourites')
+    def delete(self, request):
+
+        delete_ids = [b['board'] for b in request.data]
+        print(request.data)
+        favourites = BoardFavourite.objects.filter(board__in=delete_ids)
+        favourites.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 
 class BoardsLastSeenView(APIView):

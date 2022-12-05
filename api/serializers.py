@@ -57,10 +57,21 @@ class BoardUpdateSerializer(BoardSerializer):
     # Only for schema generation, not actually used.
     # because DRF-YASG does not support partial.
     def get_fields(self):
+        new_fields = super().get_fields()
+        new_fields['is_archived'] = serializers.BooleanField()
+        return new_fields
+
+
+class BoardPatchSerializer(BoardSerializer):
+    # Only for schema generation, not actually used.
+    # because DRF-YASG does not support partial.
+    def get_fields(self):
         new_fields = OrderedDict()
         for name, field in super().get_fields().items():
             field.required = False
             new_fields[name] = field
+        new_fields['is_archived'] = serializers.BooleanField()
+        new_fields['is_archived'].required = False
         return new_fields
 
 
@@ -91,11 +102,19 @@ class BoardDetailSerializer(serializers.Serializer):
 
 
 class BoardFavouriteSerializer(serializers.Serializer):
-    board = serializers.IntegerField(read_only=True)
+    board = serializers.IntegerField()
     user = serializers.IntegerField(read_only=True)
 
     def create(self, validated_data):
-        pass
+        board = Board.objects.get(pk=validated_data['board'])
+        bf, created = BoardFavourite(
+            board=board,
+            user=validated_data['user']
+        )
+        bf.save()
+        return bf
+
+
 
     def update(self, instance, validated_data):
         pass
