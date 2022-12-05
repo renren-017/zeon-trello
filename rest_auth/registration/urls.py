@@ -19,5 +19,5 @@ urlpatterns = [
     # view from:
     # django-allauth https://github.com/pennersr/django-allauth/blob/master/allauth/account/views.py
     re_path(r'^account-confirm-email/(?P<key>[-:\w]+)/$', TemplateView.as_view(),
-        name='account_confirm_email'),
+        name='rest_confirm_email'),
 ]
