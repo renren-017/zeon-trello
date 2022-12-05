@@ -22,10 +22,8 @@ urlpatterns = [
     path("card/<int:pk>/update/", CardUpdateView.as_view(), name="card-update"),
     path("card/<int:pk>/delete/", CardDeleteView.as_view(), name="card-delete"),
 
-    # Card Labels
-    # path("card_label/<int:pk>/", CardLabelDetailView.as_view(), name="card-label-detail"),
+    # Card Marks
     path("card/<int:pk>/label/add/", CardMarkCreateView.as_view(), name="card-mark-add"),
-    # path("card_label/<int:pk>/update/", CardLabelUpdateView.as_view(), name="card-label-update"),
     # path("card_label/<int:pk>/delete/", CardLabelDeleteView.as_view(), name="card-label-delete"),
 
     # Card Files
@@ -33,12 +31,6 @@ urlpatterns = [
     path("card/<int:pk>/file/add/", CardFileCreateView.as_view(), name="card-file-add"),
     # path("card_file/<int:pk>/update/", CardFileUpdateView.as_view(), name="card-file-update"),
     # path("card_file/<int:pk>/delete/", CardFileDeleteView.as_view(), name="card-file-delete"),
-
-    # Card Checklists
-    # path("card_checklist/<int:pk>/", CardChecklistDetailView.as_view(), name="card-checklist-detail"),
-    # path("card/<int:pk>/checklist/add/", CardChecklistCreateView.as_view(), name="card-checklist-add"),
-    # path("card_checklist/<int:pk>/update/", CardChecklistUpdateView.as_view(), name="card-checklist-update"),
-    # path("card_checklist/<int:pk>/delete/", CardChecklistDeleteView.as_view(), name="card-checklist-delete"),
 
     path("card/<int:pk>/comment/add/", CardCommentCreateView.as_view(), name="card-comment-add"),
 

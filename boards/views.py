@@ -11,7 +11,7 @@ from .forms import BarForm, CommentForm, CardCreateForm, CardUpdateForm
 
 
 class ProjectListView(LoginRequiredMixin, ListView):
-    login_url = 'accounts/login/'
+    login_url = reverse_lazy('account_login')
     template_name = 'boards/project_list.html'
     context_object_name = 'projects'
 
@@ -42,7 +42,7 @@ class ProjectCreateView(CreateView):
 
 
 class ProjectDetailView(LoginRequiredMixin, ListView):
-    login_url = 'accounts/login/'
+    login_url = reverse_lazy('account_login')
     template_name = 'boards/board_list.html'
     model = Project
     context_object_name = 'project'
@@ -80,7 +80,7 @@ class BoardDeleteView(DeleteView):
 
 
 class BoardDetailView(DetailView, LoginRequiredMixin, FormMixin):
-    login_url = reverse_lazy('login')
+    login_url = reverse_lazy('account_login')
     model = Board
     template_name = 'boards/board_detail.html'
     context_object_name = 'board'
