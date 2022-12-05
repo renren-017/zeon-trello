@@ -144,7 +144,7 @@ class CardDetailView(DetailView, LoginRequiredMixin, FormMixin):
         card = self.get_object()
         context = super().get_context_data(**kwargs)
         context["board_id"] = card.column.board.id
-        context['marks'] = CardMark.objects.filter(card=card)
+        context['marks'] = [cm.mark for cm in CardMark.objects.filter(card=card)]
         context['comments'] = CardComment.objects.filter(card=card)
         context['files'] = CardFile.objects.filter(card=card)
         context['form'] = self.get_form()

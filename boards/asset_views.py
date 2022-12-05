@@ -11,7 +11,10 @@ class CardMarkCreateView(CreateView):
     template_name = 'boards/asset_form.html'
 
     def form_valid(self, form):
-        form.instance.card = Card.objects.get(id=self.kwargs['pk'])
+        card = Card.objects.get(id=self.kwargs['pk'])
+        form.instance.board = card.column.board
+        form.instance.save()
+        CardMark(mark=form.instance, card=card).save()
         return super().form_valid(form)
 
     def get_success_url(self):
