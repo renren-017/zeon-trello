@@ -27,7 +27,7 @@
       <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
         <dt class="text-sm font-medium text-gray-500">Column</dt>
         <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-            {{ card.bar.title }}
+            {{ card.column.title }}
         </dd>
       </div>
       <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -41,34 +41,17 @@
       <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
         <dt class="text-sm font-medium text-gray-500">Labels</dt>
         <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-            {% for label in labels %}
-                <p style="display:inline-block;background-color:{{ label.color }}" class="rounded text-white py-0.5 px-1 mx-1">
-                   {{ label.title }}
+            {% for mark in marks %}
+                <p style="display:inline-block;background-color:{{ mark.color }}" class="rounded text-white py-0.5 px-1 mx-1">
+                   {{ mark.title }}
                 </p>
             {% endfor %}
-            <label for="card-label-add">
-                <p class="rounded text-white py-0.1 px-1 mx-1 my-0.5 bg-zinc-500" style="display:inline-block;align-items:center;"> + new label </p></label>
+            <label for="card-mark-add">
+                <p class="rounded text-white py-0.1 px-1 mx-1 my-0.5 bg-zinc-500" style="display:inline-block;align-items:center;"> + new mark </p></label>
                 <input
-                        id="card-label-add"
+                        id="card-mark-add"
                         type="button"
-                        onclick="location.href='{% url "card-label-add" card.id %}'"/>
-        </dd>
-      </div>
-
-      <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-        <dt class="text-sm font-medium text-gray-500">Checklist</dt>
-        <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-            {% for checklist in checklists %}
-                <input type="checkbox" id="{{ checklist.id }}" name="to-do" value="done">
-                <label for="{{ checklist.id }}">{{checklist.content}}</label><br>
-            {% endfor %}
-
-            <label for="card-checklist-add">
-                <p class="rounded text-white py-0.5 px-1 mx-1 my-1 bg-zinc-500" style="display:inline-block;align-items:center;"> + add to-do </p></label>
-                <input
-                        id="card-checklist-add"
-                        type="button"
-                        onclick="location.href='{% url "card-checklist-add" card.id %}'"/>
+                        onclick="location.href='{% url "card-mark-add" card.id %}'"/>
         </dd>
       </div>
 

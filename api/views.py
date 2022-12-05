@@ -223,16 +223,8 @@ class BoardMemberAddView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class BarView(APIView):
+class ColumnView(APIView):
     permission_classes = (IsBoardMember, )
-
-    # @swagger_auto_schema(operation_summary='Read all Column Objects')
-    # def get(self, request, pk):
-    #     board = Board.objects.get(pk=pk)
-    #     self.check_object_permissions(request, board)
-    #     columns = Column.objects.filter(board=board)
-    #     serializer = BarSerializer(columns, many=True)
-    #     return Response(serializer.data)
 
     @swagger_auto_schema(request_body=BarSerializer, operation_summary='Creates a new Column Object')
     def post(self, request, pk):
@@ -247,7 +239,7 @@ class BarView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class BarDetailView(APIView):
+class ColumnDetailView(APIView):
     permission_classes = (IsBoardMember, )
 
     @swagger_auto_schema(operation_summary='Read a certain Column Object')
@@ -277,14 +269,6 @@ class BarDetailView(APIView):
 
 class CardView(APIView):
     permission_classes = (IsBoardMember, )
-
-    # @swagger_auto_schema(operation_summary='Read all Card Objects')
-    # def get(self, request, pk):
-    #     column = Column.objects.get(pk=pk)
-    #     self.check_object_permissions(request, column.board)
-    #     cards = Card.objects.filter(column=column)
-    #     serializer = CardSerializer(cards)
-    #     return Response(serializer.data)
 
     @swagger_auto_schema(request_body=CardSerializer, operation_summary='Creates a new Card Object')
     def post(self, request, pk):

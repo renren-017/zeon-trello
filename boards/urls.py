@@ -3,7 +3,7 @@ from django.urls import path
 from .views import ProjectDetailView, BoardDetailView, BoardCreateView, BoardUpdateView, BoardDeleteView,\
     CardCreateView, CardUpdateView, CardDetailView, CardDeleteView, SearchResultsView, ProjectListView, \
     ProjectCreateView
-from .asset_views import CardLabelCreateView, CardFileCreateView, CardCommentCreateView
+from .asset_views import CardMarkCreateView, CardFileCreateView, CardCommentCreateView
 
 urlpatterns = [
     # Boards
@@ -24,7 +24,7 @@ urlpatterns = [
 
     # Card Labels
     # path("card_label/<int:pk>/", CardLabelDetailView.as_view(), name="card-label-detail"),
-    path("card/<int:pk>/label/add/", CardLabelCreateView.as_view(), name="card-label-add"),
+    path("card/<int:pk>/label/add/", CardMarkCreateView.as_view(), name="card-mark-add"),
     # path("card_label/<int:pk>/update/", CardLabelUpdateView.as_view(), name="card-label-update"),
     # path("card_label/<int:pk>/delete/", CardLabelDeleteView.as_view(), name="card-label-delete"),
 

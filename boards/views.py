@@ -12,15 +12,20 @@ from .forms import BarForm, CommentForm, CardCreateForm, CardUpdateForm
 
 class ProjectListView(LoginRequiredMixin, ListView):
     login_url = 'accounts/login/'
-    template_name = 'boards/board_list.html'
+    template_name = 'boards/project_list.html'
+    context_object_name = 'projects'
+
+    def get_queryset(self):
+        return Project.objects.filter(owner=self.request.user)
 
     def get_context_data(self, **kwargs):
-        projects = Project.objects.filter(owner=self.request.user)
         context = super().get_context_data(**kwargs)
-        context['user_boards'] = Board.objects.filter(projects__in=projects)
-        boards = [member.board for member in BoardMember.objects.filter(member=self.request.user)]
-        context['guest_boards'] = [board for board in boards]
-        context['boards'] = Board.objects.filter(project=project)
+        recent_boards = [b.board for b in BoardLastSeen.objects.filter(user=self.request.user).order_by('-timestamp')]
+        fav_boards = [b.board for b in BoardFavourite.objects.filter(user=self.request.user)]
+        archived_boards = [b.board for b in BoardMember.objects.filter(user=self.request.user) if b.board.is_archived==True]
+        context['recent_boards'] = recent_boards
+        context['favourite_boards'] = fav_boards
+        context['archived_boards'] = archived_boards
         return context
 
 
@@ -103,7 +108,7 @@ class CardCreateView(CreateView):
     form_class = CardCreateForm
 
     def form_valid(self, form):
-        form.instance.bar = Column.objects.get(id=self.kwargs['pk'])
+        form.instance.column = Column.objects.get(id=self.kwargs['pk'])
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
@@ -123,7 +128,6 @@ class CardUpdateView(UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["success_url"] = self.get_success_url()
-        context["labels"] = labelFormset(instance=self.get_object())
         return context
 
     def get_success_url(self):
@@ -139,8 +143,8 @@ class CardDetailView(DetailView, LoginRequiredMixin, FormMixin):
     def get_context_data(self, **kwargs):
         card = self.get_object()
         context = super().get_context_data(**kwargs)
-        context["board_id"] = card.bar.board.id
-        context['labels'] = Mark.objects.filter(card=card)
+        context["board_id"] = card.column.board.id
+        context['marks'] = CardMark.objects.filter(card=card)
         context['comments'] = CardComment.objects.filter(card=card)
         context['files'] = CardFile.objects.filter(card=card)
         context['form'] = self.get_form()

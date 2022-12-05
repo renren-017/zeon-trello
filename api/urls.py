@@ -1,6 +1,6 @@
 from django.urls import path, re_path, include
 from .views import (BoardView, BoardDetailView,
-                    BarView, BarDetailView,
+                    ColumnView, ColumnDetailView,
                     CardView, CardDetailView,
                     CardMarkView, CardMarkDetailView,
                     BoardMarkView, BoardMarkDetailView,
@@ -12,6 +12,7 @@ from .views import (BoardView, BoardDetailView,
 
 urlpatterns = [
     path('auth/', include('rest_auth.urls')),
+    path('auth/registration/', include('rest_auth.registration.urls')),
 
     path('projects/', ProjectView.as_view(), name='api-projects'),
     path('projects/<int:pk>', ProjectDetailView.as_view(), name='api-project-detail'),
@@ -24,10 +25,10 @@ urlpatterns = [
     path('boards/<int:pk>/invite/', BoardMemberAddView.as_view(), name='api-board-add-member'),
     path('boards/<int:pk>/favourite/', BoardsFavouriteDetailView.as_view(), name='api-board-favourite'),
 
-    path('bars/board/<int:pk>', BarView.as_view(), name='api-bars'),
-    path('bars/<int:pk>', BarDetailView.as_view(), name='api-bar-detail'),
+    path('columns/board/<int:pk>', ColumnView.as_view(), name='api-columns'),
+    path('columns/<int:pk>', ColumnDetailView.as_view(), name='api-column-detail'),
 
-    path('cards/bar/<int:pk>/', CardView.as_view(), name='api-cards'),
+    path('cards/column/<int:pk>/', CardView.as_view(), name='api-cards'),
     path('cards/<int:pk>', CardDetailView.as_view(), name='api-card-detail'),
 
     path('mark/board/<int:pk>/', BoardMarkView.as_view(), name='api-board-mark'),

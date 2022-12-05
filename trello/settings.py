@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'rest_auth',
+    'rest_auth.registration',
 
     'crispy_forms',
     'crispy_bootstrap5',

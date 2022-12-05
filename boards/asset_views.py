@@ -5,7 +5,7 @@ from .models import *
 from .forms import CardLabelForm
 
 
-class CardLabelCreateView(CreateView):
+class CardMarkCreateView(CreateView):
     model = Mark
     form_class = CardLabelForm
     template_name = 'boards/asset_form.html'

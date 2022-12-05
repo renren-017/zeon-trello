@@ -8,7 +8,7 @@ from django.contrib.auth import get_user_model
 # from PIL import Image
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from boards.models import Project, Board, BoardMember, BoardLastSeen
+from boards.models import Project, Board, BoardMember, BoardLastSeen, Column, Card
 
 User = get_user_model()
 
@@ -104,13 +104,6 @@ class ProjectTest(TestCase):
 
 class BoardTest(TestCase):
 
-    # def temporary_image(self):
-    #     image = Image.new("RGB", (100, 100))
-    #     tmp_file = tempfile.NamedTemporaryFile(suffix='.jpg')
-    #     image.save(tmp_file, 'jpeg')
-    #     tmp_file.seek(0)
-    #     return tmp_file
-
     def setUp(self):
         self.user1 = User(email='n@user.com', password='foo', first_name='N', last_name='U').save()
         self.user2 = User(email='n2@user.com', password='foo', first_name='N2', last_name='U2').save()
@@ -175,49 +168,99 @@ class BoardTest(TestCase):
 
 
 #
-# class BarTest(TestCase):
-#     """ Test module for Column model """
-#
-#     def setUp(self):
-#         Board(
-#             title='Example Board',
-#             background_img=temporary_image()
-#         ).save()
-#
-#     def test_bar_creation(self):
-#         data = {
-#             'board': 1,
-#             'title': 'Example Column',
-#         }
-#         response = self.client.post(reverse('bars'), data, format='json')
-#
-#         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-#
-#
-# class CardTest(TestCase):
-#     """ Test module for Column model """
-#
-#     def setUp(self):
-#         board = Board(
-#             title='Example Board',
-#             background_img=temporary_image()
-#         ).save()
-#         bar = Column(
-#             board=board,
-#             title='Example Column'
-#         ).save()
-#
-#     def test_card_creation(self):
-#         data = {
-#             'bar': 1,
-#             'title': 'Example Card',
-#             'description': 'Some short description',
-#             'deadline': datetime.now()
-#         }
-#         response = self.client.post(reverse('cards'), data, format='json')
-#
-#         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-#
+class ColumnTest(TestCase):
+
+    def setUp(self):
+        self.user1 = User(email='n@user.com', password='foo', first_name='N', last_name='U').save()
+        self.user2 = User(email='n2@user.com', password='foo', first_name='N2', last_name='U2').save()
+        Project(title='Example', owner=get_user(1)).save()
+        Board(title='Example', project=Project.objects.get(pk=1), background_img=get_image()).save()
+        BoardMember(user=get_user(1), board=Board.objects.get(pk=1)).save()
+        Column(title='Example', board=Board.objects.get(pk=1)).save()
+
+    def test_column_creation(self):
+        self.client.force_login(get_user(1))
+        data = {'title': 'Example Column'}
+        response = self.client.post(reverse('api-columns', kwargs={'pk': 1}), data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Column.objects.count(), 2)
+
+        self.client.force_login(get_user(2))
+        response_unauthorized = self.client.post(reverse('api-columns', kwargs={'pk': 1}), data, format='json')
+        self.assertEqual(response_unauthorized.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_column_update(self):
+        self.client.force_login(get_user(1))
+        data = {'title': 'Example Update'}
+        response = self.client.put(reverse('api-column-detail', kwargs={'pk': 1}), data, format='json', content_type='application/json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        self.client.force_login(get_user(2))
+        response_unauthorized = self.client.put(reverse('api-column-detail', kwargs={'pk': 1}), data, format='json', content_type='application/json')
+        self.assertEqual(response_unauthorized.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_column_deletion(self):
+        self.client.force_login(get_user(2))
+        response_unauthorized = self.client.delete(reverse('api-column-detail', kwargs={'pk': 1}), format='json')
+        self.assertEqual(response_unauthorized.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.client.force_login(get_user(1))
+        response = self.client.delete(reverse('api-column-detail', kwargs={'pk': 1}), format='json')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+
+class CardTest(TestCase):
+
+    def setUp(self):
+        self.user1 = User(email='n@user.com', password='foo', first_name='N', last_name='U').save()
+        self.user2 = User(email='n2@user.com', password='foo', first_name='N2', last_name='U2').save()
+        Project(title='Example', owner=get_user(1)).save()
+        Board(title='Example', project=Project.objects.get(pk=1), background_img=get_image()).save()
+        BoardMember(user=get_user(1), board=Board.objects.get(pk=1)).save()
+        Column(title='Example', board=Board.objects.get(pk=1)).save()
+        Card(title='Example', column=Column.objects.get(pk=1), description='bla', deadline=timezone.now()).save()
+
+    def test_card_creation(self):
+        self.client.force_login(get_user(1))
+        data = {
+            'title': 'Example Title',
+            'description': 'Some short description',
+            'deadline': timezone.now()
+        }
+        response = self.client.post(reverse('api-cards', kwargs={'pk': 1}), data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Card.objects.count(), 2)
+
+        self.client.force_login(get_user(2))
+        response_unauthorized = self.client.post(reverse('api-cards', kwargs={'pk': 1}), data, format='json')
+        self.assertEqual(response_unauthorized.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_card_update(self):
+        self.client.force_login(get_user(1))
+        data = {
+            'title': 'Example Update',
+            'description': 'Some short description',
+            'deadline': timezone.now()
+        }
+        response = self.client.put(reverse('api-card-detail', kwargs={'pk': 1}), data, format='json', content_type='application/json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Card.objects.count(), 1)
+
+        self.client.force_login(get_user(2))
+        response_unauthorized = self.client.put(reverse('api-card-detail', kwargs={'pk': 1}), data, format='json', content_type='application/json')
+        self.assertEqual(response_unauthorized.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_card_deletion(self):
+        self.client.force_login(get_user(2))
+        response_unauthorized = self.client.delete(reverse('api-card-detail', kwargs={'pk': 1}), format='json')
+        self.assertEqual(response_unauthorized.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(Card.objects.count(), 1)
+
+        self.client.force_login(get_user(1))
+        response = self.client.delete(reverse('api-card-detail', kwargs={'pk': 1}), format='json')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Card.objects.count(), 0)
+
 #
 # class CardAssetsTest(TestCase):
 #     """ Test module for Column model """
@@ -227,7 +270,7 @@ class BoardTest(TestCase):
 #             title='Example Board',
 #             background_img=temporary_image()
 #         ).save()
-#         bar = Column(
+#         column = Column(
 #             board=board,
 #             title='Example Column'
 #         ).save()
