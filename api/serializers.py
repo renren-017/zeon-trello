@@ -256,6 +256,14 @@ class CardMarkSerializer(serializers.Serializer):
         card.save()
         return card
 
+class CardMarkDetailSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    mark = serializers.PrimaryKeyRelatedField(queryset=Mark.objects.all())
+    card = serializers.IntegerField()
+
+    def create(self, validated_data):
+        pass
+
 
 class CardFileSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
@@ -271,7 +279,15 @@ class CardFileSerializer(serializers.Serializer):
         return card_file
 
 
+class CardFileDetailSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    file = serializers.FileField()
+    card = serializers.IntegerField()
+
+
+
 class CardCommentSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
     card = serializers.PrimaryKeyRelatedField(read_only=True)
     user = serializers.PrimaryKeyRelatedField(read_only=True)
     body = serializers.CharField(max_length=300)
@@ -292,6 +308,13 @@ class CardCommentSerializer(serializers.Serializer):
         instance.body = validated_data.get('body', instance.body)
         instance.save()
         return instance
+
+
+class CardCommentDetailSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    card = serializers.PrimaryKeyRelatedField(read_only=True)
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+
 
 class CardCommentUpdateSerializer(CardCommentSerializer):
     # Only for schema generation, not actually used.

@@ -34,11 +34,11 @@ urlpatterns = [
     path('mark/board/<int:pk>/', BoardMarkView.as_view(), name='api-board-mark'),
     path('mark/<int:pk>/', BoardMarkDetailView.as_view(), name='api-board-mark-detail'),
     path('mark/card/<int:pk>/', CardMarkView.as_view(), name='api-card-mark'),
-    path('card_mark/<int:pk>/', CardMarkDetailView.as_view(), name='api-card-mark-detail'),
+    path('card_marks/card/<int:pk>/delete', CardMarkDetailView.as_view(), name='api-card-mark-detail'),
 
-    path('files/card/<int:pk>/', CardFileView.as_view(), name='api-card-files'),
-    path('files/<int:pk>/', CardFileDetailView.as_view(), name='api-card-file-detail'),
+    path('files/card/<int:pk>/', CardFileView.as_view(), name='api-card-file'),
+    path('files/card/<int:pk>/delete', CardFileDetailView.as_view(), name='api-card-file-detail'),
 
-    path('comments/card/<int:pk>/', CardCommentView.as_view(), name='api-card-comments'),
+    path('comments/card/<int:pk>/', CardCommentView.as_view(), name='api-card-comment'),
     path('comments/<int:pk>/', CardCommentDetailView.as_view(), name='api-card-comment-detail')
 ]

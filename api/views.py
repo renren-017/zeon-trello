@@ -14,8 +14,9 @@ from .serializers import (BoardSerializer, BoardDetailSerializer, BoardFavourite
                           CardFileSerializer,
                           CardCommentSerializer,
                           ProjectSerializer, BoardPatchSerializer, BoardMemberSerializer, CardUpdateSerializer,
-                          BoardMarkUpdateSerializer, CardCommentUpdateSerializer, BoardUpdateSerializer, )
-from .permissions import IsProjectOwnerOrReadOnly, IsBoardOwnerOrMember, IsBoardMember
+                          BoardMarkUpdateSerializer, CardCommentUpdateSerializer, BoardUpdateSerializer,
+                          CardMarkDetailSerializer, CardFileDetailSerializer, CardCommentDetailSerializer, )
+from .permissions import IsProjectOwnerOrReadOnly, IsBoardOwnerOrMember, IsBoardMember, IsCommentOwner
 from boards.models import (Board, Column,
                            Card, Mark, CardFile, CardComment,
                            Project,
@@ -25,7 +26,8 @@ from boards.models import (Board, Column,
 class ProjectView(APIView):
     permission_classes = (IsAuthenticated,)
 
-    @swagger_auto_schema(operation_summary='Reads all Projects that current user owns')
+    @swagger_auto_schema(responses={200: ProjectSerializer(many=True)},
+                         operation_summary='Reads all Projects that current user owns')
     def get(self, request):
         self.check_permissions(request)
 
@@ -47,7 +49,8 @@ class ProjectView(APIView):
 class ProjectDetailView(APIView):
     permission_classes = (IsProjectOwnerOrReadOnly,)
 
-    @swagger_auto_schema(operation_summary='Reads certain Project by pk')
+    @swagger_auto_schema(responses={200: ProjectSerializer()},
+                         operation_summary='Reads certain Project by pk')
     def get(self, request, pk):
         project = Project.objects.get(pk=pk)
         self.check_object_permissions(request, project)
@@ -92,7 +95,8 @@ class BoardView(APIView):
 
         return [board.board for board in boards]
 
-    @swagger_auto_schema(operation_summary='Reads all Boards that the current user is member of',
+    @swagger_auto_schema(responses={200: BoardSerializer(many=True)},
+                         operation_summary='Reads all Boards that the current user is member of',
                          manual_parameters=(is_archived,))
     def get(self, request):
         self.check_permissions(request)
@@ -108,7 +112,8 @@ class ProjectBoardView(APIView):
     def get_object(self):
         return Project.objects.get(pk=self.kwargs['pk'])
 
-    @swagger_auto_schema(operation_summary='Reads all Boards that were created under a certain Project')
+    @swagger_auto_schema(responses={200: BoardSerializer(many=True)},
+                         operation_summary='Reads all Boards that were created under a certain Project')
     def get(self, request, pk):
         project = self.get_object()
         boards = project.boards
@@ -134,7 +139,8 @@ class ProjectBoardView(APIView):
 class BoardDetailView(APIView):
     permission_classes = (IsBoardOwnerOrMember,)
 
-    @swagger_auto_schema(operation_summary='Reads a certain Board by pk')
+    @swagger_auto_schema(responses={200: BoardDetailSerializer()},
+                         operation_summary='Reads a certain Board by pk')
     def get(self, request, pk):
         board = Board.objects.get(pk=pk)
         self.check_object_permissions(request, board)
@@ -174,7 +180,8 @@ class BoardDetailView(APIView):
 class BoardsFavouriteView(APIView):
     permission_classes = (IsBoardMember,)
 
-    @swagger_auto_schema(operation_summary='Reads current user\'s Favourite Boards')
+    @swagger_auto_schema(responses={200: BoardFavouriteSerializer(many=True)},
+                         operation_summary='Reads current user\'s Favourite Boards')
     def get(self, request):
         self.check_permissions(request)
         boards = [b.board for b in BoardFavourite.objects.filter(user=request.user)]
@@ -198,17 +205,16 @@ class BoardsFavouriteView(APIView):
     def delete(self, request):
 
         delete_ids = [b['board'] for b in request.data]
-        print(request.data)
         favourites = BoardFavourite.objects.filter(board__in=delete_ids)
         favourites.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-
 class BoardsLastSeenView(APIView):
     permission_classes = (IsAuthenticated,)
 
-    @swagger_auto_schema(operation_summary='Reads all user\'s Last Seen Boards')
+    @swagger_auto_schema(responses={200: BoardsLastSeenSerializer(many=True)},
+                         operation_summary='Reads all user\'s Last Seen Boards')
     def get(self, request):
         self.check_permissions(request)
         boards = BoardLastSeen.objects.filter(user=request.user).order_by('-timestamp')
@@ -219,7 +225,8 @@ class BoardsLastSeenView(APIView):
 class BoardMemberAddView(APIView):
     permission_classes = (IsBoardOwnerOrMember,)
 
-    @swagger_auto_schema(request_body=BoardMemberSerializer, operation_summary='Adds a member to a certain Board')
+    @swagger_auto_schema(request_body=BoardMemberSerializer,
+                         operation_summary='Adds a member to a certain Board')
     def post(self, request, pk):
         board = Board.objects.get(pk=pk)
         self.check_object_permissions(request, board)
@@ -235,7 +242,8 @@ class BoardMemberAddView(APIView):
 class ColumnView(APIView):
     permission_classes = (IsBoardMember, )
 
-    @swagger_auto_schema(request_body=BarSerializer, operation_summary='Creates a new Column Object')
+    @swagger_auto_schema(request_body=BarSerializer,
+                         operation_summary='Creates a new Column Object')
     def post(self, request, pk):
         board = Board.objects.get(pk=pk)
         self.check_object_permissions(request, board)
@@ -251,7 +259,8 @@ class ColumnView(APIView):
 class ColumnDetailView(APIView):
     permission_classes = (IsBoardMember, )
 
-    @swagger_auto_schema(operation_summary='Read a certain Column Object')
+    @swagger_auto_schema(responses={200: BarSerializer()},
+                         operation_summary='Read a certain Column Object')
     def get(self, request, pk):
         column = Column.objects.get(pk=pk)
         self.check_object_permissions(request, column.board)
@@ -279,7 +288,8 @@ class ColumnDetailView(APIView):
 class CardView(APIView):
     permission_classes = (IsBoardMember, )
 
-    @swagger_auto_schema(request_body=CardSerializer, operation_summary='Creates a new Card Object')
+    @swagger_auto_schema(request_body=CardSerializer,
+                         operation_summary='Creates a new Card Object')
     def post(self, request, pk):
         column = Column.objects.get(pk=pk)
         self.check_object_permissions(request, column.board)
@@ -294,7 +304,8 @@ class CardView(APIView):
 class CardDetailView(APIView):
     permission_classes = (IsBoardMember, )
 
-    @swagger_auto_schema(operation_summary='Read a certain Card Object')
+    @swagger_auto_schema(responses={200: CardSerializer()},
+                         operation_summary='Read a certain Card Object')
     def get(self, request, pk):
         card = Card.objects.get(pk=pk)
         self.check_object_permissions(request, card.column.board)
@@ -334,7 +345,8 @@ class CardDetailView(APIView):
 class BoardMarkView(APIView):
     permission_classes = (IsBoardMember, )
 
-    @swagger_auto_schema(operation_summary='Read all Card Label Objects')
+    @swagger_auto_schema(responses={200: BoardMarkSerializer(many=True)},
+                         operation_summary='Read all Card Label Objects')
     def get(self, request, pk):
         board = Board.objects.get(pk=pk)
         self.check_object_permissions(request, board)
@@ -358,7 +370,8 @@ class BoardMarkView(APIView):
 class BoardMarkDetailView(APIView):
     permission_classes = (IsBoardMember, )
 
-    @swagger_auto_schema(operation_summary='Read a certain Card Label Object')
+    @swagger_auto_schema(responses={200: BoardMarkSerializer()},
+                         operation_summary='Read a certain Card Label Object')
     def get(self, request, pk):
         board_mark = Mark.objects.get(pk=pk)
         self.check_object_permissions(request, board_mark.board)
@@ -366,7 +379,8 @@ class BoardMarkDetailView(APIView):
         serializer = BoardMarkSerializer(board_mark)
         return Response(serializer.data)
 
-    @swagger_auto_schema(request_body=BoardMarkSerializer, operation_summary='Updates a certain Mark by pk')
+    @swagger_auto_schema(request_body=BoardMarkSerializer,
+                         operation_summary='Updates a certain Mark by pk')
     def put(self, request, pk):
         board_mark = Mark.objects.get(pk=pk)
         self.check_object_permissions(request, board_mark.board)
@@ -377,7 +391,8 @@ class BoardMarkDetailView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @swagger_auto_schema(request_body=BoardMarkUpdateSerializer, operation_summary='Partially updates a certain Mark by pk')
+    @swagger_auto_schema(request_body=BoardMarkUpdateSerializer,
+                         operation_summary='Partially updates a certain Mark by pk')
     def patch(self, request, pk):
         board_mark = Mark.objects.get(pk=pk)
         self.check_object_permissions(request, board_mark.board)
@@ -415,10 +430,14 @@ class CardMarkView(APIView):
 class CardMarkDetailView(APIView):
     permission_classes = (IsBoardMember, )
 
+    @swagger_auto_schema(request_body=CardMarkDetailSerializer,
+                         operation_summary='Deletes marks(s) from a certain card')
     def delete(self, request, pk):
-        card_mark = CardMark.objects.get(pk=pk)
-        self.check_object_permissions(request, card_mark.card.column.board)
-        card_mark.delete()
+        card = Card.objects.get(pk=pk)
+        delete_ids = [b['mark'] for b in request.data]
+        card_marks = CardMark.objects.filter(mark__in=delete_ids, card=card)
+        card_marks.delete()
+        self.check_object_permissions(request, card.column.board)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -426,7 +445,8 @@ class CardFileView(APIView):
     parser_classes = (MultiPartParser, FormParser)
     permission_classes = (IsBoardMember, )
 
-    @swagger_auto_schema(operation_summary='Reads all Files uploaded to a certain Card')
+    @swagger_auto_schema(responses={200: CardFileSerializer(many=True)},
+                         operation_summary='Reads all Files uploaded to a certain Card')
     def get(self, request, pk):
         card = Card.objects.get(pk=pk)
         self.check_object_permissions(request, card.column.board)
@@ -449,27 +469,25 @@ class CardFileView(APIView):
 
 class CardFileDetailView(APIView):
     permission_classes = (IsBoardMember,)
-    @swagger_auto_schema(operation_summary='Reads a certain Card File by pk')
-    def get(self, request, pk):
-        card_file = CardFile.objects.get(pk=pk)
-        self.check_object_permissions(request, card_file.card.column.board)
 
-        serializer = CardFileSerializer(card_file)
-        return Response(serializer.data)
-
-    @swagger_auto_schema(operation_summary='Deletes a certain Card File by pk')
+    @swagger_auto_schema(request_body=CardFileDetailSerializer,
+                         operation_summary='Deletes a certain Card File by pk')
     def delete(self, request, pk):
-        card_file = CardFile.objects.get(pk=pk)
-        self.check_object_permissions(request, card_file.card.column.board)
+        card = Card.objects.get(pk=pk)
+        self.check_object_permissions(request, card.column.board)
 
-        card_file.delete()
+        delete_ids = [b['file'] for b in request.data]
+        card_files = CardFile.objects.filter(id__in=delete_ids, card=card)
+        card_files.delete()
+
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CardCommentView(APIView):
     permission_classes = (IsBoardMember, )
 
-    @swagger_auto_schema(operation_summary='Read all Card Comments')
+    @swagger_auto_schema(responses={200: CardCommentSerializer(many=True)},
+                         operation_summary='Read all Card Comments')
     def get(self, request, pk):
         card = Card.objects.get(pk=pk)
         self.check_object_permissions(request, card.column.board)
@@ -489,14 +507,27 @@ class CardCommentView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @swagger_auto_schema(request_body=CardCommentDetailSerializer,
+                         operation_summary='Deletes a certain Card Comment by pk')
+    def delete(self, request, pk):
+        card = Card.objects.get(pk=pk)
+        self.check_object_permissions(request, card.column.board)
+
+        delete_ids = [b['id'] for b in request.data]
+        comments = CardComment.objects.filter(id__in=delete_ids)
+        comments.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class CardCommentDetailView(APIView):
-    permission_classes = (IsBoardMember, )
+    permission_classes = (IsCommentOwner, )
 
     @swagger_auto_schema(request_body=CardCommentUpdateSerializer,
                          operation_summary='Updates a new Comment to a certain Card')
     def put(self, request, pk):
         card_comment = CardComment.objects.get(pk=pk)
-        self.check_object_permissions(request, card_comment.card.column.board)
+        self.check_object_permissions(request, card_comment)
 
         serializer = CardCommentSerializer(card_comment, data=request.data, partial=True)
         if serializer.is_valid():
@@ -504,10 +535,4 @@ class CardCommentDetailView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @swagger_auto_schema(operation_summary='Deletes a certain Card Comment by pk')
-    def delete(self, request, pk):
-        card_comment = CardComment.objects.get(pk=pk)
-        self.check_object_permissions(request, card_comment.card.column.board)
 
-        card_comment.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)

@@ -8,11 +8,11 @@ User = get_user_model()
 
 class Project(models.Model):
     title = models.CharField(max_length=50)
-    owner = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name='projects')
+    owner = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True, related_name='projects')
 
 
 class Board(models.Model):
-    project = models.ForeignKey(to=Project, on_delete=models.CASCADE, related_name='boards')
+    project = models.ForeignKey(to=Project, on_delete=models.SET_NULL, null=True, related_name='boards')
     title = models.CharField(max_length=50)
     background_img = models.ImageField(upload_to='back_img/')
     is_archived = models.BooleanField(default=False)
@@ -25,26 +25,26 @@ class Board(models.Model):
 
 
 class BoardMember(models.Model):
-    board = models.ForeignKey(to=Board, on_delete=models.CASCADE, related_name='members')
-    user = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name='boards')
+    board = models.ForeignKey(to=Board, on_delete=models.SET_NULL, null=True, related_name='members')
+    user = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True, related_name='boards')
 
     def __str__(self):
         return f'{self.board.id}:{self.user.id}'
 
 
 class BoardLastSeen(models.Model):
-    board = models.ForeignKey(to=Board, on_delete=models.CASCADE)
-    user = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name='last_seen_boards')
+    board = models.ForeignKey(to=Board, on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True, related_name='last_seen_boards')
     timestamp = models.DateTimeField(auto_now=True)
 
 
 class BoardFavourite(models.Model):
-    board = models.ForeignKey(to=Board, on_delete=models.CASCADE)
-    user = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name='favourite_boards')
+    board = models.ForeignKey(to=Board, on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True, related_name='favourite_boards')
 
 
 class Column(models.Model):
-    board = models.ForeignKey(to=Board, on_delete=models.CASCADE, related_name='columns')
+    board = models.ForeignKey(to=Board, on_delete=models.SET_NULL, null=True, related_name='columns')
     title = models.CharField(max_length=30)
 
     def __str__(self):
@@ -52,7 +52,7 @@ class Column(models.Model):
 
 
 class Card(models.Model):
-    column = models.ForeignKey(to=Column, on_delete=models.CASCADE, related_name='cards')
+    column = models.ForeignKey(to=Column, on_delete=models.SET_NULL, null=True, related_name='cards')
     title = models.CharField(max_length=30)
     description = models.TextField(max_length=500)
     deadline = models.DateTimeField()
@@ -63,8 +63,8 @@ class Card(models.Model):
 
 
 class CardComment(models.Model):
-    card = models.ForeignKey(to=Card, on_delete=models.CASCADE, related_name='comments')
-    user = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name='comments')
+    card = models.ForeignKey(to=Card, on_delete=models.SET_NULL, null=True, related_name='comments')
+    user = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True, related_name='comments')
     body = models.TextField(max_length=300)
     created_on = models.DateTimeField(auto_now_add=True)
 
@@ -73,7 +73,7 @@ class CardComment(models.Model):
 
 
 class CardFile(models.Model):
-    card = models.ForeignKey(to=Card, on_delete=models.CASCADE, related_name='files')
+    card = models.ForeignKey(to=Card, on_delete=models.SET_NULL, related_name='files', null=True)
     file = models.FileField(upload_to='card_files/')
 
     def __str__(self):
@@ -81,7 +81,7 @@ class CardFile(models.Model):
 
 
 class Mark(models.Model):
-    board = models.ForeignKey(to=Board, on_delete=models.CASCADE, related_name='marks')
+    board = models.ForeignKey(to=Board, on_delete=models.SET_NULL, related_name='marks', null=True)
     title = models.CharField(max_length=30)
     color = models.CharField(default='#000', max_length=7)
 
@@ -90,8 +90,8 @@ class Mark(models.Model):
 
 
 class CardMark(models.Model):
-    mark = models.ForeignKey(to=Mark, on_delete=models.CASCADE)
-    card = models.ForeignKey(to=Card, on_delete=models.CASCADE, related_name='marks')
+    mark = models.ForeignKey(to=Mark, on_delete=models.SET_NULL, null=True)
+    card = models.ForeignKey(to=Card, on_delete=models.SET_NULL, null=True, related_name='marks')
 
     def __str__(self):
         return self.mark.title

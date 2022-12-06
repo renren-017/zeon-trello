@@ -1,6 +1,6 @@
 from rest_framework import permissions
 
-from boards.models import BoardMember, Board
+from boards.models import BoardMember, Board, CardComment
 
 
 class IsProjectOwnerOrReadOnly(permissions.BasePermission):
@@ -40,5 +40,19 @@ class IsBoardMember(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         if BoardMember.objects.filter(user=request.user, board=obj).exists():
+            return True
+        return False
+
+
+class IsCommentOwner(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        if request.user.is_authenticated:
+            return True
+        return False
+
+    def has_object_permission(self, request, view, obj):
+        if (CardComment.objects.filter(user=request.user, card=obj.card).exists() and
+                BoardMember.objects.filter(user=request.user, board=obj.card.column.board).exists()):
             return True
         return False
