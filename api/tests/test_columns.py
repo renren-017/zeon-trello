@@ -17,7 +17,7 @@ def get_user(pk):
 
 def get_file():
     return SimpleUploadedFile(name='test_image.jpg',
-                              content=open('media/back_img/pexels-peng-liu-169647.jpg', 'rb').read(),
+                              content=open('media/back_img/ryan-lum-1ak3Z7ZmtQA-unsplash.jpg', 'rb').read(),
                               content_type='image/jpeg')
 
 

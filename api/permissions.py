@@ -1,6 +1,6 @@
 from rest_framework import permissions
 
-from boards.models import BoardMember, Board, CardComment
+from boards.models import BoardMember, CardComment
 
 
 class IsProjectOwnerOrReadOnly(permissions.BasePermission):

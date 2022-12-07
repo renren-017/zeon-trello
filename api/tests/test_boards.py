@@ -17,7 +17,7 @@ def get_user(pk):
 
 def get_file():
     return SimpleUploadedFile(name='test_image.jpg',
-                              content=open('media/back_img/pexels-peng-liu-169647.jpg', 'rb').read(),
+                              content=open('media/back_img/ryan-lum-1ak3Z7ZmtQA-unsplash.jpg', 'rb').read(),
                               content_type='image/jpeg')
 
 
@@ -57,7 +57,7 @@ class BoardTest(TestCase):
         response = self.client.post(reverse('api-project-boards', kwargs={'pk': 1}), data, format='formdata')
         end = time.time()
 
-        self.assertLess(end-start, 0.2)
+        self.assertLess(end-start, 0.3)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(BoardMember.objects.get(board=Board.objects.get(pk=2)).user, get_user(1))
         self.assertEqual(Board.objects.count(), 2)

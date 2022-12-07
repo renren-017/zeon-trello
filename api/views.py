@@ -7,20 +7,18 @@ from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
 from drf_yasg.utils import swagger_auto_schema
 
-from .serializers import (BoardSerializer, BoardDetailSerializer, BoardFavouriteSerializer, BoardsLastSeenSerializer,
-                          BarSerializer,
-                          CardSerializer,
-                          BoardMarkSerializer, CardMarkSerializer,
-                          CardFileSerializer,
-                          CardCommentSerializer,
-                          ProjectSerializer, BoardPatchSerializer, BoardMemberSerializer, CardUpdateSerializer,
-                          BoardMarkUpdateSerializer, CardCommentUpdateSerializer, BoardUpdateSerializer,
-                          CardMarkDetailSerializer, CardFileDetailSerializer, CardCommentDetailSerializer, )
+from .serializers import (BoardSerializer, BoardDetailSerializer, BoardPatchSerializer, BoardUpdateSerializer,
+                          BoardFavouriteSerializer, BoardsLastSeenSerializer, BoardMemberSerializer,
+                          ProjectSerializer, BarSerializer, CardSerializer,
+                          BoardMarkSerializer, BoardMarkUpdateSerializer,
+                          CardMarkSerializer, CardMarkDetailSerializer,
+                          CardFileSerializer, CardFileDetailSerializer,
+                          CardCommentSerializer, CardCommentUpdateSerializer, CardCommentDetailSerializer,
+                          CardUpdateSerializer, )
 from .permissions import IsProjectOwnerOrReadOnly, IsBoardOwnerOrMember, IsBoardMember, IsCommentOwner
-from boards.models import (Board, Column,
-                           Card, Mark, CardFile, CardComment,
-                           Project,
-                           BoardMember, BoardLastSeen, BoardFavourite, CardMark)
+from boards.models import (Project, Board, Column,
+                           Card, Mark, CardMark, CardFile, CardComment,
+                           BoardMember, BoardLastSeen, BoardFavourite)
 
 
 class ProjectView(APIView):
@@ -415,7 +413,8 @@ class BoardMarkDetailView(APIView):
 class CardMarkView(APIView):
     permission_classes = (IsBoardMember, )
 
-    @swagger_auto_schema(request_body=CardMarkSerializer, operation_description='Adding Mark to a Card')
+    @swagger_auto_schema(request_body=CardMarkSerializer,
+                         operation_summary='Adding Mark to a Card')
     def post(self, request, pk):
         card = Card.objects.get(pk=pk)
         self.check_object_permissions(request, card.column.board)

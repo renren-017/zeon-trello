@@ -11,6 +11,7 @@ from boards.models import Project, Board, BoardMember, Column, Card, Mark, CardM
 
 User = get_user_model()
 
+optimal_response_time = 0.03
 
 def get_user(pk):
     return User.objects.get(pk=pk)
@@ -18,7 +19,7 @@ def get_user(pk):
 
 def get_file():
     return SimpleUploadedFile(name='test_image.jpg',
-                              content=open('media/back_img/pexels-peng-liu-169647.jpg', 'rb').read(),
+                              content=open('media/back_img/ryan-lum-1ak3Z7ZmtQA-unsplash.jpg', 'rb').read(),
                               content_type='image/jpeg')
 
 
@@ -46,7 +47,7 @@ class CardTest(TestCase):
         response = self.client.post(reverse('api-cards', kwargs={'pk': 1}), data, format='json')
         end = time.time()
 
-        self.assertLess(end-start, 0.02)
+        self.assertLess(end-start, optimal_response_time)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Card.objects.count(), 2)
 
@@ -61,7 +62,7 @@ class CardTest(TestCase):
         response_unauthorized = self.client.post(reverse('api-cards', kwargs={'pk': 1}), data, format='json')
         end = time.time()
 
-        self.assertLess(end-start, 0.02)
+        self.assertLess(end-start, optimal_response_time)
         self.assertEqual(response_unauthorized.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_card_update(self):
@@ -87,7 +88,7 @@ class CardTest(TestCase):
         response_unauthorized = self.client.put(reverse('api-card-detail', kwargs={'pk': 1}), data, format='json', content_type='application/json')
         end = time.time()
 
-        self.assertLess(end-start, 0.02)
+        self.assertLess(end-start, optimal_response_time)
         self.assertEqual(response_unauthorized.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_card_deletion(self):
@@ -96,7 +97,7 @@ class CardTest(TestCase):
         response_unauthorized = self.client.delete(reverse('api-card-detail', kwargs={'pk': 1}), format='json')
         end = time.time()
 
-        self.assertLess(end-start, 0.02)
+        self.assertLess(end-start, optimal_response_time)
         self.assertEqual(response_unauthorized.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(Card.objects.count(), 1)
 
@@ -105,7 +106,7 @@ class CardTest(TestCase):
         response = self.client.delete(reverse('api-card-detail', kwargs={'pk': 1}), format='json')
         end = time.time()
 
-        self.assertLess(end-start, 0.06)
+        self.assertLess(end-start, optimal_response_time)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Card.objects.count(), 0)
 
@@ -117,7 +118,7 @@ class CardTest(TestCase):
         end = time.time()
 
         self.assertEqual(response_board.status_code, status.HTTP_200_OK)
-        self.assertLess(end-start, 0.02)
+        self.assertLess(end-start, optimal_response_time)
 
     def test_get_board_marks_unauthorized(self):
         self.client.force_login(get_user(2))
@@ -139,7 +140,7 @@ class CardTest(TestCase):
         end = time.time()
 
         self.assertEqual(response_card.status_code, status.HTTP_201_CREATED)
-        self.assertLess(end-start, 0.02)
+        self.assertLess(end-start, optimal_response_time)
 
     def test_set_card_marks_unauthorized(self):
         self.client.force_login(get_user(2))
@@ -152,7 +153,7 @@ class CardTest(TestCase):
         end = time.time()
 
         self.assertEqual(response_card.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertLess(end-start, 0.02)
+        self.assertLess(end-start, optimal_response_time)
 
     def test_delete_card_marks(self):
         self.client.force_login(get_user(1))
@@ -167,7 +168,7 @@ class CardTest(TestCase):
         end = time.time()
 
         self.assertEqual(response_card.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertLess(end-start, 0.03)
+        self.assertLess(end-start, optimal_response_time)
 
     def test_delete_card_marks_unauthorized(self):
         self.client.force_login(get_user(2))
@@ -182,7 +183,7 @@ class CardTest(TestCase):
         end = time.time()
 
         self.assertEqual(response_card.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertLess(end-start, 0.03)
+        self.assertLess(end-start, optimal_response_time)
 
     def test_set_card_files(self):
         self.client.force_login(get_user(1))
@@ -193,7 +194,7 @@ class CardTest(TestCase):
         end = time.time()
 
         self.assertEqual(response_card.status_code, status.HTTP_201_CREATED)
-        self.assertLess(end-start, 0.03)
+        self.assertLess(end-start, optimal_response_time)
 
     def test_set_card_files_unauthorized(self):
         self.client.force_login(get_user(2))
@@ -204,7 +205,7 @@ class CardTest(TestCase):
         end = time.time()
 
         self.assertEqual(response_card.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertLess(end-start, 0.03)
+        self.assertLess(end-start, optimal_response_time)
 
     def test_delete_card_files(self):
         self.client.force_login(get_user(1))
@@ -223,7 +224,7 @@ class CardTest(TestCase):
         end = time.time()
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertLess(end - start, 0.02)
+        self.assertLess(end-start, optimal_response_time)
 
     def test_delete_card_files_unauthorized(self):
         self.client.force_login(get_user(2))
@@ -242,7 +243,7 @@ class CardTest(TestCase):
         end = time.time()
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertLess(end - start, 0.02)
+        self.assertLess(end-start, optimal_response_time)
 
     def test_create_card_comments(self):
         self.client.force_login(get_user(1))
@@ -255,7 +256,7 @@ class CardTest(TestCase):
         end = time.time()
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertLess(end - start, 0.02)
+        self.assertLess(end-start, optimal_response_time)
 
     def test_create_card_comments_unauthorized(self):
         self.client.force_login(get_user(2))
@@ -268,7 +269,7 @@ class CardTest(TestCase):
         end = time.time()
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertLess(end - start, 0.02)
+        self.assertLess(end-start, optimal_response_time)
 
     def test_create_card_comments_update(self):
         self.client.force_login(get_user(1))
@@ -284,7 +285,7 @@ class CardTest(TestCase):
         end = time.time()
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertLess(end - start, 0.02)
+        self.assertLess(end-start, optimal_response_time)
 
     def test_create_card_comments_update_unowned(self):
         self.client.force_login(get_user(1))
@@ -302,7 +303,7 @@ class CardTest(TestCase):
         end = time.time()
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertLess(end - start, 0.02)
+        self.assertLess(end-start, optimal_response_time)
 
     def test_delete_comments(self):
         self.client.force_login(get_user(1))
@@ -324,4 +325,4 @@ class CardTest(TestCase):
         end = time.time()
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertLess(end - start, 0.02)
+        self.assertLess(end-start, optimal_response_time)

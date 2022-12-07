@@ -1,9 +1,10 @@
 from django.urls import path
 
-from .views import ProjectDetailView, BoardDetailView, BoardCreateView, BoardUpdateView, BoardDeleteView,\
-    CardCreateView, CardUpdateView, CardDetailView, CardDeleteView, SearchResultsView, ProjectListView, \
-    ProjectCreateView, BoardFavRedirectView, BoardFavRemoveRedirectView, BoardArchiveRedirectView, \
-    BoardArchiveRemoveRedirectView
+from .views import (ProjectListView, ProjectDetailView, ProjectCreateView,
+                    BoardDetailView, BoardCreateView, BoardUpdateView, BoardDeleteView,
+                    BoardFavRedirectView, BoardFavRemoveRedirectView, BoardArchiveRedirectView,
+                    BoardArchiveRemoveRedirectView,
+                    CardCreateView, CardUpdateView, CardDetailView, CardDeleteView, SearchResultsView,)
 from .asset_views import CardMarkCreateView, CardFileCreateView, CardCommentCreateView
 
 urlpatterns = [

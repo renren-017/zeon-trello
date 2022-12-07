@@ -1,13 +1,12 @@
 from collections import OrderedDict
 from io import BytesIO
-
 from PIL import Image
 from django.core.files import File
-from rest_framework import serializers
-from boards.models import Project, Board, Column, Card, Mark, CardComment, CardFile, BoardMember, BoardFavourite, \
-    BoardLastSeen, CardMark
 from django.contrib.auth import get_user_model
 from django.utils import timezone
+from rest_framework import serializers
+
+from boards.models import (Project, Board, Column, Card, Mark, CardComment, CardFile, BoardMember, BoardFavourite, CardMark)
 
 
 User = get_user_model()
@@ -113,11 +112,6 @@ class BoardFavouriteSerializer(serializers.Serializer):
         )
         bf.save()
         return bf
-
-
-
-    def update(self, instance, validated_data):
-        pass
 
 
 class BoardMemberSerializer(serializers.Serializer):
@@ -355,11 +349,6 @@ class ProjectSerializer(serializers.Serializer):
 class BoardsLastSeenSerializer(serializers.Serializer):
     timestamp = serializers.DateTimeField(read_only=True)
 
-    def create(self, validated_data):
-        pass
-
-    def update(self, instance, validated_data):
-        pass
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)

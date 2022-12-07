@@ -1,8 +1,5 @@
 from django import forms
-from django.forms.models import inlineformset_factory
-from colorfield.fields import ColorField
-from colorfield.widgets import ColorWidget
-from django.forms.widgets import TextInput, SelectDateWidget
+from django.forms.widgets import TextInput
 from django.forms import DateTimeInput
 
 from .models import Column, CardComment, Card, Mark
