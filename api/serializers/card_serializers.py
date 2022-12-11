@@ -3,11 +3,11 @@ from collections import OrderedDict
 from django.utils import timezone
 from rest_framework import serializers
 
+from api.serializers.board_serializers import BoardMarkSerializer
 from boards.models import Column, Card, Mark, CardMark, CardFile, CardComment
 
 
 class CardSerializer(serializers.Serializer):
-
     id = serializers.PrimaryKeyRelatedField(read_only=True)
     title = serializers.CharField(max_length=30)
     description = serializers.CharField(max_length=500)
@@ -32,7 +32,8 @@ class CardSerializer(serializers.Serializer):
         marks = [cardmark.mark for cardmark in instance.marks.all()]
         representation['marks'] = BoardMarkSerializer(marks, many=True, context=self.context).data
         representation['files'] = CardFileSerializer(instance.files.all(), many=True, context=self.context).data
-        representation['comments'] = CardCommentSerializer(instance.comments.all(), many=True, context=self.context).data
+        representation['comments'] = CardCommentSerializer(instance.comments.all(), many=True,
+                                                           context=self.context).data
         return representation
 
     def update(self, instance, validated_data):

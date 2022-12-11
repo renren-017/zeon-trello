@@ -10,6 +10,17 @@ from api.serializers.column_serializers import BarSerializer
 from boards.models import Project, Board, BoardMember, BoardFavourite, Mark
 
 
+def compress_img(image_to_compress):
+    image = Image.open(image_to_compress)
+    image_output = BytesIO()
+    image.save(image_output,
+               "JPEG",
+               optimize=True,
+               quality=30)
+    image = File(image_output, name=image_to_compress.name)
+    return image
+
+
 class BoardSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     project = serializers.PrimaryKeyRelatedField(read_only=True)
@@ -21,14 +32,7 @@ class BoardSerializer(serializers.Serializer):
     last_modified = serializers.DateTimeField(read_only=True)
 
     def create(self, validated_data):
-        background_img = validated_data['background_img']
-        img = Image.open(background_img)
-        img_output = BytesIO()
-        img.save(img_output,
-                 "JPEG",
-                 optimize=True,
-                 quality=30)
-        background_img = File(img_output, name=background_img.name)
+        background_img = compress_img(validated_data['background_img'])
         project = Project.objects.get(pk=validated_data['project'])
 
         board = Board(title=validated_data['title'],
@@ -40,7 +44,8 @@ class BoardSerializer(serializers.Serializer):
 
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
-        instance.background_img = validated_data.get('background_img', instance.background_img)
+        if validated_data.get('background_img'):
+            instance.background_img = compress_img(validated_data['background_img'])
         instance.save()
         return instance
 
@@ -78,7 +83,8 @@ class BoardDetailSerializer(serializers.Serializer):
 
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
-        instance.background_img = validated_data.get('background_img', instance.background_img)
+        if validated_data.get('background_img'):
+            instance.background_img = compress_img(validated_data['background_img'])
         instance.save()
         return instance
 
@@ -151,8 +157,10 @@ class BoardMarkUpdateSerializer(BoardMarkSerializer):
             new_fields[name] = field
         return new_fields
 
+
 class BoardsLastSeenSerializer(serializers.Serializer):
     timestamp = serializers.DateTimeField(read_only=True)
+
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['board'] = BoardSerializer(instance.board, context=self.context).data
