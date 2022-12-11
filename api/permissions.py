@@ -5,11 +5,6 @@ from boards.models import BoardMember, CardComment
 
 class IsProjectOwnerOrReadOnly(permissions.BasePermission):
 
-    def has_permission(self, request, view):
-        if request.user.is_authenticated:
-            return True
-        return False
-
     def has_object_permission(self, request, view, obj):
         if obj.owner == request.user:
             return True
@@ -17,11 +12,6 @@ class IsProjectOwnerOrReadOnly(permissions.BasePermission):
 
 
 class IsBoardOwnerOrMember(permissions.BasePermission):
-
-    def has_permission(self, request, view):
-        if request.user.is_authenticated:
-            return True
-        return False
 
     def has_object_permission(self, request, view, obj):
         if obj.project.owner == request.user:
@@ -33,11 +23,6 @@ class IsBoardOwnerOrMember(permissions.BasePermission):
 
 class IsBoardMember(permissions.BasePermission):
 
-    def has_permission(self, request, view):
-        if request.user.is_authenticated:
-            return True
-        return False
-
     def has_object_permission(self, request, view, obj):
         if BoardMember.objects.filter(user=request.user, board=obj).exists():
             return True
@@ -45,11 +30,6 @@ class IsBoardMember(permissions.BasePermission):
 
 
 class IsCommentOwner(permissions.BasePermission):
-
-    def has_permission(self, request, view):
-        if request.user.is_authenticated:
-            return True
-        return False
 
     def has_object_permission(self, request, view, obj):
         if (CardComment.objects.filter(user=request.user, card=obj.card).exists() and

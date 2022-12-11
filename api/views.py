@@ -22,20 +22,24 @@ from boards.models import (Project, Board, Column,
 
 
 class ProjectView(APIView):
-    permission_classes = (IsAuthenticated,)
 
     @swagger_auto_schema(responses={200: ProjectSerializer(many=True)},
                          operation_summary='Reads all Projects that current user owns')
     def get(self, request):
         self.check_permissions(request)
+        if self.permission_denied:
+            return Response({'Message': 'Please sign in first to view your projects'})
 
         projects = Project.objects.filter(owner=request.user)
         serializer = ProjectSerializer(projects, many=True)
         return Response(serializer.data)
 
-    @swagger_auto_schema(operation_summary='Creates a new Project for current user', request_body=ProjectSerializer)
+    @swagger_auto_schema(operation_summary='Creates a new Project for current user',
+                         request_body=ProjectSerializer)
     def post(self, request):
         self.check_permissions(request)
+        if self.permission_denied:
+            return Response({'Message': 'Please sign in first to post new projects'})
 
         serializer = ProjectSerializer(data=request.data)
         if serializer.is_valid():
@@ -77,7 +81,6 @@ class ProjectDetailView(APIView):
 
 class BoardView(APIView):
     parser_classes = (MultiPartParser, FormParser)
-    permission_classes = (IsAuthenticated,)
 
     is_archived = openapi.Parameter('is_archived', openapi.IN_QUERY,
                                     description="Set True, t or 1 to sort out archived boards. "
@@ -85,8 +88,12 @@ class BoardView(APIView):
                                     type=openapi.TYPE_STRING)
 
     def get_queryset(self, request):
+        self.check_permissions(request)
+        if self.permission_denied:
+            return Response({'Message': 'Please sign in first to view your boards'})
+
         boards = BoardMember.objects.filter(user=request.user)
-        is_archived = self.request.query_params.get('is_archived', False)
+        is_archived = request.query_params.get('is_archived', False)
 
         if is_archived is not None:
             boards = boards.filter(board__is_archived=is_archived)
@@ -97,8 +104,7 @@ class BoardView(APIView):
                          operation_summary='Reads all Boards that the current user is member of',
                          manual_parameters=(is_archived,))
     def get(self, request):
-        self.check_permissions(request)
-        boards = self.get_queryset(request)
+        boards = self.get_queryset(request=request)
         serializer = BoardSerializer(boards, many=True)
         return Response(serializer.data)
 
@@ -209,12 +215,14 @@ class BoardsFavouriteView(APIView):
 
 
 class BoardsLastSeenView(APIView):
-    permission_classes = (IsAuthenticated,)
 
     @swagger_auto_schema(responses={200: BoardsLastSeenSerializer(many=True)},
                          operation_summary='Reads all user\'s Last Seen Boards')
     def get(self, request):
         self.check_permissions(request)
+        if self.permission_denied:
+            return Response({'Message': 'Please sign in first to view your boards'})
+
         boards = BoardLastSeen.objects.filter(user=request.user).order_by('-timestamp')
         serializer = BoardsLastSeenSerializer(boards, many=True)
         return Response(serializer.data)

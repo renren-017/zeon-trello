@@ -6,10 +6,13 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from rest_framework import serializers
 
-from boards.models import (Project, Board, Column, Card, Mark, CardComment, CardFile, BoardMember, BoardFavourite, CardMark)
+from boards.models import (Project, Board, Column, Card, Mark, CardMark, CardComment, CardFile,
+                           BoardMember, BoardFavourite,)
 
 
 User = get_user_model()
+
+
 
 
 class UserSerializer(serializers.Serializer):
