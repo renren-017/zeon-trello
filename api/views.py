@@ -7,14 +7,14 @@ from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
 from drf_yasg.utils import swagger_auto_schema
 
-from .serializers import (BoardSerializer, BoardDetailSerializer, BoardPatchSerializer, BoardUpdateSerializer,
-                          BoardFavouriteSerializer, BoardsLastSeenSerializer, BoardMemberSerializer,
-                          ProjectSerializer, BarSerializer, CardSerializer,
-                          BoardMarkSerializer, BoardMarkUpdateSerializer,
-                          CardMarkSerializer, CardMarkDetailSerializer,
-                          CardFileSerializer, CardFileDetailSerializer,
-                          CardCommentSerializer, CardCommentUpdateSerializer, CardCommentDetailSerializer,
-                          CardUpdateSerializer, )
+from .serializers.project_serializers import ProjectSerializer
+from .serializers.card_serializers import CardSerializer, CardUpdateSerializer, CardMarkSerializer, \
+    CardMarkDetailSerializer, CardFileSerializer, CardFileDetailSerializer, CardCommentSerializer, \
+    CardCommentDetailSerializer, CardCommentUpdateSerializer
+from .serializers.column_serializers import BarSerializer
+from .serializers.board_serializers import BoardSerializer, BoardUpdateSerializer, BoardPatchSerializer, \
+    BoardDetailSerializer, BoardFavouriteSerializer, BoardMemberSerializer, BoardMarkSerializer, \
+    BoardMarkUpdateSerializer, BoardsLastSeenSerializer
 from .permissions import IsProjectOwnerOrReadOnly, IsBoardOwnerOrMember, IsBoardMember, IsCommentOwner
 from boards.models import (Project, Board, Column,
                            Card, Mark, CardMark, CardFile, CardComment,
@@ -27,8 +27,6 @@ class ProjectView(APIView):
                          operation_summary='Reads all Projects that current user owns')
     def get(self, request):
         self.check_permissions(request)
-        if self.permission_denied:
-            return Response({'Message': 'Please sign in first to view your projects'})
 
         projects = Project.objects.filter(owner=request.user)
         serializer = ProjectSerializer(projects, many=True)
@@ -38,8 +36,6 @@ class ProjectView(APIView):
                          request_body=ProjectSerializer)
     def post(self, request):
         self.check_permissions(request)
-        if self.permission_denied:
-            return Response({'Message': 'Please sign in first to post new projects'})
 
         serializer = ProjectSerializer(data=request.data)
         if serializer.is_valid():
@@ -89,8 +85,6 @@ class BoardView(APIView):
 
     def get_queryset(self, request):
         self.check_permissions(request)
-        if self.permission_denied:
-            return Response({'Message': 'Please sign in first to view your boards'})
 
         boards = BoardMember.objects.filter(user=request.user)
         is_archived = request.query_params.get('is_archived', False)
@@ -220,8 +214,6 @@ class BoardsLastSeenView(APIView):
                          operation_summary='Reads all user\'s Last Seen Boards')
     def get(self, request):
         self.check_permissions(request)
-        if self.permission_denied:
-            return Response({'Message': 'Please sign in first to view your boards'})
 
         boards = BoardLastSeen.objects.filter(user=request.user).order_by('-timestamp')
         serializer = BoardsLastSeenSerializer(boards, many=True)
